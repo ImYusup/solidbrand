@@ -3,10 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 const API_KEY = "p26fMbua8cec38f853fecb50BTmJIFKj";
 
-type Params = { provinceId: string };
-
-export async function GET(req: NextRequest, context: { params: Params }) {
-  const { provinceId } = context.params;
+export async function GET(req: NextRequest, context: { params: Record<string, string> }) {
+  const provinceId = context.params.provinceId;
 
   if (!provinceId || isNaN(Number(provinceId))) {
     return NextResponse.json({ success: false, error: "Invalid Province ID" }, { status: 400 });
