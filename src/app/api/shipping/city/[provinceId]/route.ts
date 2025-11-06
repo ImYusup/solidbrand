@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const API_KEY = "p26fMbua8cec38f853fecb50BTmJIFKj";
 
-export async function GET(req: NextRequest, context: { params: Record<string, string> }) {
+export async function GET(req: NextRequest, context: { params: { provinceId: string } }) {
   const provinceId = context.params.provinceId;
 
   if (!provinceId || isNaN(Number(provinceId))) {
