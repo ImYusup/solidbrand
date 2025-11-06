@@ -1,11 +1,13 @@
 // src/app/checkout/page.tsx
-"use client";
+import { Suspense } from "react";
 import CheckoutForm from "@/components/CheckoutForm";
 
 export default function CheckoutPage() {
   return (
     <div className="min-h-screen bg-white">
-      <CheckoutForm />
+      <Suspense fallback={<div>Loading checkout...</div>}>
+        <CheckoutForm />
+      </Suspense>
     </div>
   );
 }
