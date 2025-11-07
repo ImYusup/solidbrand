@@ -90,13 +90,25 @@ export default function OrderComplete() {
           console.log("📲 WhatsApp Buyer Message:\n", buyerMessage);
           console.log("📢 WhatsApp Admin Message:\n", adminMessage);
 
-          // ✅ Redirect ke WA Buyer
-          window.open(`https://wa.me/${buyerWa}?text=${encodeURIComponent(buyerMessage)}`, "_blank");
+          // ✅ Kirim ke WA Buyer via backend
+          await fetch("/api/send-wa", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              to: buyerWa,
+              message: buyerMessage,
+            }),
+          });
 
-          // ✅ Redirect ke WA Admin
-          setTimeout(() => {
-            window.open(`https://wa.me/6281289066999?text=${encodeURIComponent(adminMessage)}`, "_blank");
-          }, 1000);
+          // ✅ Kirim ke WA Admin via backend
+          await fetch("/api/send-wa", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              to: "6281289066999",
+              message: adminMessage,
+            }),
+          });
         }, 300);
       }, 100);
     };
