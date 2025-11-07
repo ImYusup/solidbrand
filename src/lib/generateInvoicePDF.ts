@@ -4,19 +4,24 @@ import html2canvas from "html2canvas";
 
 export const generateInvoicePDF = async (order: any, element: HTMLElement): Promise<Blob> => {
   const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-  const imgData = canvas.toDataURL("image/png");
+  if (!canvas) throw new Error("❌ Gagal render canvas dari elemen invoice");
 
+  const imgData = canvas.toDataURL("image/png");
   const pdf = new jsPDF("p", "mm", "a4");
+
   const imgWidth = 190;
   const pageHeight = 297;
   const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
   let heightLeft = imgHeight;
   let position = 10;
 
+  // Halaman pertama
   pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
   heightLeft -= pageHeight;
 
-  while (heightLeft >= 0) {
+  // Tambahan halaman jika perlu
+  while (heightLeft > 0) {
     position = heightLeft - imgHeight + 10;
     pdf.addPage();
     pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);

@@ -1,4 +1,3 @@
-// src/components/OrderComplete.tsx
 "use client";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -26,95 +25,91 @@ export default function OrderComplete() {
   useEffect(() => {
     if (!order || !iframeRef.current) return;
 
-    const triggerAllActions = async () => {
-      const iframe = iframeRef.current!;
-      const doc = iframe.contentDocument!;
-      doc.open();
-      doc.write(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <style>
-              body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
-            </style>
-          </head>
-          <body>
-            <div id="invoice-root"></div>
-          </body>
-        </html>
-      `);
-      doc.close();
+    const iframe = iframeRef.current;
+    const doc = iframe.contentDocument;
+    if (!doc) return;
 
-      setTimeout(async () => {
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+          </style>
+        </head>
+        <body>
+          <div id="invoice-root"></div>
+        </body>
+      </html>
+    `);
+    doc.close();
+
+    const renderAndDownloadPDF = async () => {
+      try {
         const html = ReactDOMServer.renderToString(<InvoiceTemplate order={order} />);
         doc.getElementById("invoice-root")!.innerHTML = html;
 
-        setTimeout(async () => {
-          try {
-            const pdfBlob = await generateInvoicePDF(order, doc.body);
-            const url = URL.createObjectURL(pdfBlob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = `Invoice_${order.orderId}.pdf`;
-            link.click();
-            URL.revokeObjectURL(url);
-          } catch (e) {
-            console.error("PDF Error:", e);
-          }
-
-          const bankMap: Record<string, { bank: string; account: string; name: string }> = {
-            bca_manual: { bank: "BCA", account: "7390 7480 13", name: "Yusup Juniadi" },
-            bri_manual: { bank: "BRI", account: "7463 0100 7264 505", name: "Yusup Juniadi" },
-            mandiri_manual: { bank: "Mandiri", account: "1560016268064", name: "Yusup Juniadi" },
-            seabank_manual: { bank: "Sea Bank", account: "9013 5607 9886", name: "Yusup Juniadi" },
-          };
-
-          const bankInfo =
-            bankMap[String(order.bank?.key)] ??
-            (order.bank?.bank
-              ? { bank: order.bank.bank, account: order.bank.account, name: order.bank.name }
-              : null);
-
-          const bankText = bankInfo
-            ? `${bankInfo.bank} - ${bankInfo.account} a.n. ${bankInfo.name}`
-            : "QRIS/VA";
-
-          const buyerPhone = order.billing.phone.replace(/[^0-9]/g, "");
-          const buyerWa = buyerPhone.startsWith("0") ? "62" + buyerPhone.slice(1) : buyerPhone;
-
-          const buyerMessage = `*INVOICE ORDER ANDA*\n\n*Order ID:* ${order.orderId}\n*Produk:* ${order.product.name}\n*Total:* Rp ${order.total.toLocaleString()}\n*Ongkir:* ${order.shipping.cost > 0 ? `Rp ${order.shipping.cost.toLocaleString()} (${order.shipping.method})` : "-"}\n*Bank Tujuan:* ${bankText}\n\nSilakan transfer tepat sesuai nominal di atas.\nSetelah transfer, kirim bukti ke: wa.me/6281289066999`;
-
-          const adminMessage = `*ORDER BARU!*\n\n*ID:* ${order.orderId}\n*Produk:* ${order.product.name}\n*Total:* Rp ${order.total.toLocaleString()}\n*Nama:* ${order.billing.firstName} ${order.billing.lastName}\n*HP:* ${order.billing.phone}\n*Email:* ${order.billing.email}\n*Alamat:* ${order.billing.street}, ${order.billing.city}\n*Bank:* ${bankText}`;
-
-          // ✅ PREVIEW WHATSAPP MESSAGE DI CONSOLE
-          console.log("📲 WhatsApp Buyer Message:\n", buyerMessage);
-          console.log("📢 WhatsApp Admin Message:\n", adminMessage);
-
-          // ✅ Kirim ke WA Buyer via backend
-          await fetch("/api/send-wa", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              to: buyerWa,
-              message: buyerMessage,
-            }),
-          });
-
-          // ✅ Kirim ke WA Admin via backend
-          await fetch("/api/send-wa", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              to: "6281289066999",
-              message: adminMessage,
-            }),
-          });
-        }, 300);
-      }, 100);
+        const pdfBlob = await generateInvoicePDF(order, doc.body);
+        const url = URL.createObjectURL(pdfBlob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `Invoice_${order.orderId}.pdf`;
+        link.click();
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        console.error("❌ PDF generation error:", e);
+      }
     };
 
-    const timer = setTimeout(triggerAllActions, 600);
-    return () => clearTimeout(timer);
+    const sendWhatsAppMessages = async () => {
+      const bankMap: Record<string, { bank: string; account: string; name: string }> = {
+        bca_manual: { bank: "BCA", account: "7390748013", name: "Yusup Juniadi" },
+        bri_manual: { bank: "BRI", account: "746301007264505", name: "Yusup Juniadi" },
+        mandiri_manual: { bank: "Mandiri", account: "1560016268064", name: "Yusup Juniadi" },
+        seabank_manual: { bank: "Sea Bank", account: "901356079886", name: "Yusup Juniadi" },
+      };
+
+      const bankInfo =
+        bankMap[String(order.bank?.key)] ??
+        (order.bank?.bank
+          ? { bank: order.bank.bank, account: order.bank.account, name: order.bank.name }
+          : null);
+
+      const bankText = bankInfo
+        ? `${bankInfo.bank} - ${bankInfo.account} a.n. ${bankInfo.name}`
+        : "QRIS/VA";
+
+      const buyerPhone = order.billing.phone.replace(/[^0-9]/g, "");
+      const buyerWa = buyerPhone.startsWith("0") ? "62" + buyerPhone.slice(1) : buyerPhone;
+
+      const buyerMessage = `*INVOICE ORDER ANDA*\n\n*Order ID:* ${order.orderId}\n*Produk:* ${order.product.name}\n*Total:* Rp ${order.total.toLocaleString()}\n*Ongkir:* ${order.shipping.cost > 0 ? `Rp ${order.shipping.cost.toLocaleString()} (${order.shipping.method})` : "-"}\n*Bank Tujuan:* ${bankText}\n\nSilakan transfer tepat sesuai nominal di atas.\nSetelah transfer, kirim bukti ke: wa.me/6281289066999`;
+
+      const adminMessage = `*ORDER BARU!*\n\n*ID:* ${order.orderId}\n*Produk:* ${order.product.name}\n*Total:* Rp ${order.total.toLocaleString()}\n*Nama:* ${order.billing.firstName} ${order.billing.lastName}\n*HP:* ${order.billing.phone}\n*Email:* ${order.billing.email}\n*Alamat:* ${order.billing.street}, ${order.billing.city}\n*Bank:* ${bankText}`;
+
+      console.log("📲 WhatsApp Buyer Message:\n", buyerMessage);
+      console.log("📢 WhatsApp Admin Message:\n", adminMessage);
+
+      try {
+        await Promise.all([
+          fetch("/api/send-wa", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ to: buyerWa, message: buyerMessage }),
+          }),
+          fetch("/api/send-wa", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ to: "6281289066999", message: adminMessage }),
+          }),
+        ]);
+      } catch (err) {
+        console.error("❌ WhatsApp dispatch error:", err);
+      }
+    };
+
+    renderAndDownloadPDF();
+    sendWhatsAppMessages();
   }, [order]);
 
   if (loading) return <div style={{ padding: "2rem", textAlign: "center" }}>Loading...</div>;

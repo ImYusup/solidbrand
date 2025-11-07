@@ -9,24 +9,6 @@ export default function PaymentConfirmation() {
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const data = localStorage.getItem("latestOrder");
-    if (data) {
-      const parsed = JSON.parse(data);
-      setOrder(parsed);
-      setFormData({
-        ...formData,
-        orderId: parsed.orderId.toString(),
-        billingEmail: parsed.billing.email,
-        billingName: `${parsed.billing.firstName} ${parsed.billing.lastName}`,
-        bank: parsed.bank?.bank || "BCA",
-        transferAmount: parsed.total.toString(),
-        transferDate: new Date().toISOString().split("T")[0],
-      });
-    }
-    setLoading(false);
-  }, []);
-
   const [formData, setFormData] = useState({
     orderId: "",
     billingEmail: "",
@@ -38,14 +20,39 @@ export default function PaymentConfirmation() {
     additionalNotes: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  useEffect(() => {
+    const data = localStorage.getItem("latestOrder");
+    if (data) {
+      const parsed = JSON.parse(data);
+      setOrder(parsed);
+      setFormData((prev) => ({
+        ...prev,
+        orderId: parsed.orderId.toString(),
+        billingEmail: parsed.billing.email,
+        billingName: `${parsed.billing.firstName} ${parsed.billing.lastName}`,
+        bank: parsed.bank?.bank || "BCA",
+        transferAmount: parsed.total.toString(),
+        transferDate: new Date().toISOString().split("T")[0],
+      }));
+    }
+    setLoading(false);
+  }, []);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFormData({ ...formData, paymentProof: e.target.files[0] });
+    if (e.target.files?.[0]) {
+      const file = e.target.files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Ukuran file maksimal 5MB");
+        return;
+      }
+      setFormData((prev) => ({ ...prev, paymentProof: file }));
     }
   };
 
@@ -56,7 +63,6 @@ export default function PaymentConfirmation() {
       return;
     }
 
-    // FORMAT PESAN WA
     const message = `
 *KONFIRMASI PEMBAYARAN* %0A%0A
 *Order ID:* ${formData.orderId}%0A
@@ -69,11 +75,9 @@ export default function PaymentConfirmation() {
 *Catatan:* ${formData.additionalNotes || "-"}%0A%0A
 `.trim();
 
-    // KIRIM KE WA LU
     const waUrl = `https://wa.me/6281289066999?text=${message}`;
     window.open(waUrl, "_blank");
 
-    // Optional: simpan ke localStorage
     localStorage.setItem(`confirmation_${formData.orderId}`, JSON.stringify({
       ...formData,
       paymentProof: formData.paymentProof.name,
@@ -93,52 +97,25 @@ export default function PaymentConfirmation() {
         <h1 className="text-2xl font-bold text-center text-gray-800">Konfirmasi Pembayaran</h1>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Order ID *</label>
-            <input type="text" name="orderId" value={formData.orderId} readOnly className="w-full px-4 py-2 border rounded-md bg-gray-50" />
-          </div>
+          <input type="text" name="orderId" value={formData.orderId} readOnly className="w-full px-4 py-2 border rounded-md bg-gray-50" />
+          <input type="email" name="billingEmail" value={formData.billingEmail} readOnly className="w-full px-4 py-2 border rounded-md bg-gray-50" />
+          <input type="text" name="billingName" value={formData.billingName} onChange={handleChange} required className="w-full px-4 py-2 border rounded-md" />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Billing Email *</label>
-            <input type="email" name="billingEmail" value={formData.billingEmail} readOnly className="w-full px-4 py-2 border rounded-md bg-gray-50" />
-          </div>
+          <select name="bank" value={formData.bank} onChange={handleChange} required className="w-full px-4 py-2 border rounded-md">
+            <option value="BCA">BCA</option>
+            <option value="BRI">BRI</option>
+            <option value="Mandiri">Mandiri</option>
+            <option value="BNI">BNI</option>
+            <option value="Sea Bank">Sea Bank</option>
+          </select>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Billing Name *</label>
-            <input type="text" name="billingName" value={formData.billingName} onChange={handleChange} required className="w-full px-4 py-2 border rounded-md" />
-          </div>
+          <input type="date" name="transferDate" value={formData.transferDate} onChange={handleChange} required className="w-full px-4 py-2 border rounded-md" />
+          <input type="number" name="transferAmount" value={formData.transferAmount} onChange={handleChange} required className="w-full px-4 py-2 border rounded-md" />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Bank *</label>
-            <select name="bank" value={formData.bank} onChange={handleChange} required className="w-full px-4 py-2 border rounded-md">
-              <option value="BCA">BCA</option>
-              <option value="BRI">BRI</option>
-              <option value="Mandiri">Mandiri</option>
-              <option value="BNI">BNI</option>
-              <option value="Sea Bank">Sea Bank</option>
-            </select>
-          </div>
+          <input type="file" name="paymentProof" onChange={handleFileChange} required accept="image/*" className="w-full px-4 py-2 border rounded-md file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+          {formData.paymentProof && <p className="text-sm text-green-600 mt-1">File: {formData.paymentProof.name}</p>}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tgl Transfer *</label>
-            <input type="date" name="transferDate" value={formData.transferDate} onChange={handleChange} required className="w-full px-4 py-2 border rounded-md" />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nominal Transfer *</label>
-            <input type="number" name="transferAmount" value={formData.transferAmount} onChange={handleChange} required className="w-full px-4 py-2 border rounded-md" />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Bukti Pembayaran *</label>
-            <input type="file" name="paymentProof" onChange={handleFileChange} required accept="image/*" className="w-full px-4 py-2 border rounded-md file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-            {formData.paymentProof && <p className="text-sm text-green-600 mt-1">File: {formData.paymentProof.name}</p>}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Catatan Tambahan (opsional)</label>
-            <textarea name="additionalNotes" value={formData.additionalNotes} onChange={handleChange} rows={3} className="w-full px-4 py-2 border rounded-md" placeholder="Contoh: Transfer dari rekening a.n. Budi" />
-          </div>
+          <textarea name="additionalNotes" value={formData.additionalNotes} onChange={handleChange} rows={3} className="w-full px-4 py-2 border rounded-md" placeholder="Contoh: Transfer dari rekening a.n. Budi" />
 
           <button type="submit" className="w-full py-3 bg-black text-white font-bold rounded-lg hover:bg-gray-800 transition-all">
             Kirim ke WhatsApp
