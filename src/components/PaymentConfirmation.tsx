@@ -1,6 +1,5 @@
 // src/components/PaymentConfirmation.tsx
 "use client";
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
@@ -8,12 +7,13 @@ export default function PaymentConfirmation() {
   const router = useRouter();
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
 
   const [formData, setFormData] = useState({
     orderId: "",
     billingEmail: "",
     billingName: "",
-    bank: "BCA",
+    bank: "", 
     transferDate: "",
     transferAmount: "",
     paymentProof: null as File | null,
@@ -30,7 +30,7 @@ export default function PaymentConfirmation() {
         orderId: parsed.orderId.toString(),
         billingEmail: parsed.billing.email,
         billingName: `${parsed.billing.firstName} ${parsed.billing.lastName}`,
-        bank: parsed.bank?.bank || "BCA",
+        bank: parsed.bank?.bank || "",
         transferAmount: parsed.total.toString(),
         transferDate: new Date().toISOString().split("T")[0],
       }));
@@ -63,17 +63,12 @@ export default function PaymentConfirmation() {
       return;
     }
 
-    const message = `
-*KONFIRMASI PEMBAYARAN* %0A%0A
-*Order ID:* ${formData.orderId}%0A
-*Email:* ${formData.billingEmail}%0A
-*Nama:* ${formData.billingName}%0A
-*Bank:* ${formData.bank}%0A
-*Tanggal Transfer:* ${formData.transferDate}%0A
-*Nominal:* Rp ${Number(formData.transferAmount).toLocaleString()}%0A
-*Bukti:* ${formData.paymentProof.name}%0A
-*Catatan:* ${formData.additionalNotes || "-"}%0A%0A
-`.trim();
+    const phone = order?.billing?.phone?.replace(/[^0-9]/g, "") || "";
+    const isLocal = phone.startsWith("08") || phone.startsWith("62");
+
+    const message = isLocal
+      ? `*KONFIRMASI PEMBAYARAN* %0A%0A*Order ID:* ${formData.orderId}%0A*Email:* ${formData.billingEmail}%0A*Nama:* ${formData.billingName}%0A*Bank:* ${formData.bank}%0A*Tanggal Transfer:* ${formData.transferDate}%0A*Nominal:* Rp ${Number(formData.transferAmount).toLocaleString()}%0A*Bukti:* ${formData.paymentProof.name}%0A*Catatan:* ${formData.additionalNotes || "-"}%0A%0A`
+      : `*PAYMENT CONFIRMATION* %0A%0A*Order ID:* ${formData.orderId}%0A*Email:* ${formData.billingEmail}%0A*Name:* ${formData.billingName}%0A*Bank:* ${formData.bank}%0A*Transfer Date:* ${formData.transferDate}%0A*Amount:* Rp ${Number(formData.transferAmount).toLocaleString()}%0A*Proof:* ${formData.paymentProof.name}%0A*Notes:* ${formData.additionalNotes || "-"}%0A%0A`;
 
     const waUrl = `https://wa.me/6281289066999?text=${message}`;
     window.open(waUrl, "_blank");
@@ -84,7 +79,7 @@ export default function PaymentConfirmation() {
       submittedAt: new Date().toLocaleString("id-ID"),
     }));
 
-    alert("Konfirmasi berhasil dikirim ke WhatsApp!");
+    alert(isLocal ? "Konfirmasi berhasil dikirim ke WhatsApp!" : "Confirmation sent to WhatsApp!");
     router.push("/order-complete");
   };
 
@@ -96,31 +91,46 @@ export default function PaymentConfirmation() {
       <div className="bg-white rounded-lg shadow-sm border p-6 md:p-8 space-y-6">
         <h1 className="text-2xl font-bold text-center text-gray-800">Konfirmasi Pembayaran</h1>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <input type="text" name="orderId" value={formData.orderId} readOnly className="w-full px-4 py-2 border rounded-md bg-gray-50" />
-          <input type="email" name="billingEmail" value={formData.billingEmail} readOnly className="w-full px-4 py-2 border rounded-md bg-gray-50" />
-          <input type="text" name="billingName" value={formData.billingName} onChange={handleChange} required className="w-full px-4 py-2 border rounded-md" />
+        {!showForm ? (
+          <div className="text-center space-y-4">
+            <p className="text-gray-700">
+              Klik tombol di bawah untuk mulai upload bukti transfer dan kirim ke WhatsApp admin.
+            </p>
+            <button
+              onClick={() => setShowForm(true)}
+              className="px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700"
+            >
+              Mulai Konfirmasi
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <input type="text" name="orderId" value={formData.orderId} readOnly className="w-full px-4 py-2 border rounded-md bg-gray-50" />
+            <input type="email" name="billingEmail" value={formData.billingEmail} readOnly className="w-full px-4 py-2 border rounded-md bg-gray-50" />
+            <input type="text" name="billingName" value={formData.billingName} onChange={handleChange} required className="w-full px-4 py-2 border rounded-md" />
 
-          <select name="bank" value={formData.bank} onChange={handleChange} required className="w-full px-4 py-2 border rounded-md">
-            <option value="BCA">BCA</option>
-            <option value="BRI">BRI</option>
-            <option value="Mandiri">Mandiri</option>
-            <option value="BNI">BNI</option>
-            <option value="Sea Bank">Sea Bank</option>
-          </select>
+            <select name="bank" value={formData.bank} onChange={handleChange} required className="w-full px-4 py-2 border rounded-md">
+              <option value="">Pilih Bank</option>
+              <option value="BCA">BCA</option>
+              <option value="BRI">BRI</option>
+              <option value="Mandiri">Mandiri</option>
+              <option value="BNI">BNI</option>
+              <option value="Sea Bank">Sea Bank</option>
+            </select>
 
-          <input type="date" name="transferDate" value={formData.transferDate} onChange={handleChange} required className="w-full px-4 py-2 border rounded-md" />
-          <input type="number" name="transferAmount" value={formData.transferAmount} onChange={handleChange} required className="w-full px-4 py-2 border rounded-md" />
+            <input type="date" name="transferDate" value={formData.transferDate} onChange={handleChange} required className="w-full px-4 py-2 border rounded-md" />
+            <input type="number" name="transferAmount" value={formData.transferAmount} onChange={handleChange} required className="w-full px-4 py-2 border rounded-md" />
 
-          <input type="file" name="paymentProof" onChange={handleFileChange} required accept="image/*" className="w-full px-4 py-2 border rounded-md file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-          {formData.paymentProof && <p className="text-sm text-green-600 mt-1">File: {formData.paymentProof.name}</p>}
+            <input type="file" name="paymentProof" onChange={handleFileChange} required accept="image/*" className="w-full px-4 py-2 border rounded-md file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+            {formData.paymentProof && <p className="text-sm text-green-600 mt-1">File: {formData.paymentProof.name}</p>}
 
-          <textarea name="additionalNotes" value={formData.additionalNotes} onChange={handleChange} rows={3} className="w-full px-4 py-2 border rounded-md" placeholder="Contoh: Transfer dari rekening a.n. Budi" />
+            <textarea name="additionalNotes" value={formData.additionalNotes} onChange={handleChange} rows={3} className="w-full px-4 py-2 border rounded-md" placeholder="Contoh: Transfer dari rekening a.n. Budi" />
 
-          <button type="submit" className="w-full py-3 bg-black text-white font-bold rounded-lg hover:bg-gray-800 transition-all">
-            Kirim ke WhatsApp
-          </button>
-        </form>
+            <button type="submit" className="w-full py-3 bg-black text-white font-bold rounded-lg hover:bg-gray-800 transition-all">
+              Kirim ke WhatsApp
+            </button>
+          </form>
+        )}
 
         <p className="text-xs text-gray-500 text-center mt-6">
           Konfirmasi akan langsung masuk ke WhatsApp admin.

@@ -16,11 +16,9 @@ export const generateInvoicePDF = async (order: any, element: HTMLElement): Prom
   let heightLeft = imgHeight;
   let position = 10;
 
-  // Halaman pertama
   pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
   heightLeft -= pageHeight;
 
-  // Tambahan halaman jika perlu
   while (heightLeft > 0) {
     position = heightLeft - imgHeight + 10;
     pdf.addPage();

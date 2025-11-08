@@ -1,15 +1,22 @@
 // src/app/api/send-wa/route.ts
 import { NextRequest, NextResponse } from "next/server";
 
-const ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN!;
-const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID!;
-
 export async function POST(req: NextRequest) {
   try {
     const { to, message } = await req.json();
 
     if (!to || !message) {
       return NextResponse.json({ error: "Missing 'to' or 'message'" }, { status: 400 });
+    }
+
+    const ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
+    const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;
+
+    if (!ACCESS_TOKEN || !PHONE_NUMBER_ID) {
+      return NextResponse.json(
+        { error: "WhatsApp API credentials missing in environment variables" },
+        { status: 500 }
+      );
     }
 
     const url = `https://graph.facebook.com/v19.0/${PHONE_NUMBER_ID}/messages`;
@@ -32,16 +39,15 @@ export async function POST(req: NextRequest) {
 
     const result = await res.json();
 
-    // ✅ Log response for debugging
     console.log("📡 WhatsApp API Response:", result);
 
-    if (res.ok) {
-      return NextResponse.json({ success: true, result });
-    } else {
+    if (!res.ok) {
       return NextResponse.json({ success: false, error: result }, { status: res.status });
     }
+
+    return NextResponse.json({ success: true, result });
   } catch (err: any) {
     console.error("❌ send-wa error:", err);
-    return NextResponse.json({ error: "Internal Server Error", detail: err.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
