@@ -435,9 +435,8 @@ export default function CheckoutForm() {
               {paymentMethods.map((method) => (
                 <label
                   key={method.id}
-                  className={`flex items-start p-4 border rounded-lg cursor-pointer transition-all ${
-                    selectedPayment === method.id ? "border-black bg-gray-100" : "border-gray-300"
-                  }`}
+                  className={`flex items-start p-4 border rounded-lg cursor-pointer transition-all ${selectedPayment === method.id ? "border-black bg-gray-100" : "border-gray-300"
+                    }`}
                 >
                   <input
                     type="radio"
@@ -465,12 +464,13 @@ export default function CheckoutForm() {
             <button
               onClick={handlePlaceOrder}
               disabled={isButtonDisabled}
-              className={`w-full mt-6 py-4 rounded-lg font-bold text-white transition-all ${
-                !isButtonDisabled ? "bg-black hover:bg-gray-800" : "bg-gray-400 cursor-not-allowed"
-              }`}
+              className={`w-full mt-6 py-4 rounded-lg font-bold text-white transition-all ${!isButtonDisabled ? "bg-green-600 hover:bg-green-700" : "bg-gray-400 cursor-not-allowed"
+                }`}
             >
-              PLACE ORDER - Rp {total.toLocaleString()}
+              KONFIRMASI PEMBAYARAN - Rp {total.toLocaleString()}
             </button>
+
+
           </div>
         </div>
       </div>

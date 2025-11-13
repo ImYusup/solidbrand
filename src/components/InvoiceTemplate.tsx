@@ -18,10 +18,12 @@ export default function InvoiceTemplate({ order }: InvoiceProps) {
         phone: "HP:",
         item: "Item",
         price: "Harga",
-        shipping: (method: string) => `Ongkir (${method})`,
+        shipping: (m: string) => `Ongkir (${m})`,
         total: "TOTAL",
-        transfer: (bank: any) =>
-          bank ? `${bank.bank} - ${bank.account} a.n. ${bank.name}` : "QRIS/VA",
+        transfer: (b: any) => (b ? `${b.bank} - ${b.account} a.n. ${b.name}` : "QRIS/VA"),
+        address: "Alamat:",
+        qty: "Jumlah:",
+        status: "Status:",
       }
     : {
         invoice: "INVOICE",
@@ -31,104 +33,144 @@ export default function InvoiceTemplate({ order }: InvoiceProps) {
         phone: "Phone:",
         item: "Item",
         price: "Price",
-        shipping: (method: string) => `Shipping (${method})`,
+        shipping: (m: string) => `Shipping (${m})`,
         total: "TOTAL",
-        transfer: (bank: any) =>
-          bank ? `${bank.bank} - ${bank.account} under ${bank.name}` : "International Transfer / QR",
+        transfer: (b: any) => (b ? `${b.bank} - ${b.account} under ${b.name}` : "International Transfer / QR"),
+        address: "Address:",
+        qty: "Qty:",
+        status: "Status:",
       };
+
+  const fullName = `${order.billing.firstName || ""} ${order.billing.lastName || ""}`.trim();
+  const address = `${order.billing.street || ""}${order.billing.city ? ", " + order.billing.city : ""}`;
 
   return (
     <div
       style={{
-        position: "relative",
         padding: "20px",
         fontFamily: "Arial, sans-serif",
-        fontSize: "14px",
+        fontSize: 14,
         width: "210mm",
-        backgroundColor: "white",
+        backgroundColor: "#ffffff",
+        color: "#111827",
+        position: "relative",
+        boxSizing: "border-box",
       }}
     >
       {/* Watermark */}
       <div
         style={{
           position: "absolute",
-          top: "40%",
+          top: "45%",
           left: "50%",
           transform: "translate(-50%, -50%) rotate(-20deg)",
-          fontSize: "72px",
-          fontWeight: "900",
-          color: "rgba(30, 64, 175, 0.12)",
+          fontSize: 72,
+          fontWeight: 900,
+          color: "rgba(30,64,175,0.12)",
           pointerEvents: "none",
           userSelect: "none",
         }}
       >
-        NOT PAID
+        UNPAID
       </div>
 
-      {/* Header */}
-      <h2 style={{ textAlign: "center", marginBottom: "2px" }}>{t.invoice}</h2>
-      <div
-        style={{
-          textAlign: "center",
-          fontSize: "14px",
-          fontWeight: "500",
-          marginBottom: "8px",
-        }}
-      >
+      <h2 style={{ textAlign: "center", fontSize: 20, marginBottom: 2, fontWeight: "bold" }}>{t.invoice}</h2>
+      <div style={{ textAlign: "center", fontSize: 14, fontWeight: 500, marginBottom: 8 }}>
         www.solidbrand.id
       </div>
 
       <hr style={{ border: "none", borderTop: "1px solid #e5e7eb", margin: "12px 0" }} />
 
-      <table style={{ width: "100%", marginBottom: "12px", borderCollapse: "collapse" }}>
+      <table style={{ width: "100%", marginBottom: 12 }}>
         <tbody>
-          <tr><td style={{ fontWeight: "bold" }}>{t.orderId}</td><td>{order.orderId}</td></tr>
+          <tr><td style={{ fontWeight: "bold", width: 120 }}>{t.orderId}</td><td>{order.orderId}</td></tr>
           <tr><td style={{ fontWeight: "bold" }}>{t.date}</td><td>{order.date}</td></tr>
-          <tr><td style={{ fontWeight: "bold" }}>{t.name}</td><td>{order.billing.firstName} {order.billing.lastName}</td></tr>
+          <tr><td style={{ fontWeight: "bold" }}>{t.name}</td><td>{fullName}</td></tr>
           <tr><td style={{ fontWeight: "bold" }}>{t.phone}</td><td>{order.billing.phone}</td></tr>
+          <tr><td style={{ fontWeight: "bold" }}>{t.address}</td><td>{address}</td></tr>
         </tbody>
       </table>
 
-      <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "10px" }}>
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          marginBottom: 10,
+          tableLayout: "fixed", // fix layout biar gak berubah di render
+        }}
+      >
         <thead>
           <tr style={{ backgroundColor: "#f3f4f6" }}>
-            <th style={{ textAlign: "left", padding: "8px", border: "1px solid #e5e7eb", fontSize: "12px" }}>{t.item}</th>
-            <th style={{ textAlign: "right", padding: "8px", border: "1px solid #e5e7eb", fontSize: "12px" }}>{t.price}</th>
+            <th style={{ textAlign: "left", padding: "8px 12px", border: "1px solid #e5e7eb", fontSize: 12, width: "55%" }}>{t.item}</th>
+            <th style={{ textAlign: "center", padding: "8px 12px", border: "1px solid #e5e7eb", fontSize: 12, width: "15%" }}>{t.qty}</th>
+            <th style={{ textAlign: "right", padding: "8px 16px", border: "1px solid #e5e7eb", fontSize: 12, width: "30%" }}>{t.price}</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td style={{ padding: "8px", border: "1px solid #e5e7eb" }}>{order.product.name}</td>
-            <td style={{ textAlign: "right", padding: "8px", border: "1px solid #e5e7eb" }}>
-              Rp {order.price.toLocaleString()}
+            <td style={{ padding: "8px 12px", border: "1px solid #e5e7eb", wordBreak: "break-word" }}>
+              {order.product.name}
+            </td>
+            <td style={{ textAlign: "center", padding: "8px 12px", border: "1px solid #e5e7eb" }}>
+              {order.quantity ?? 1}
+            </td>
+            <td
+              style={{
+                textAlign: "right",
+                padding: "8px 16px",
+                border: "1px solid #e5e7eb",
+                wordBreak: "break-word",
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Rp {(order.price ?? order.total).toLocaleString()}
             </td>
           </tr>
 
-          {order.shipping.cost > 0 && (
+          {order.shipping?.cost > 0 && (
             <tr>
-              <td style={{ padding: "8px", border: "1px solid #e5e7eb" }}>
+              <td style={{ padding: "8px 12px", border: "1px solid #e5e7eb" }}>
                 {t.shipping(order.shipping.method)}
               </td>
-              <td style={{ textAlign: "right", padding: "8px", border: "1px solid #e5e7eb" }}>
+              <td style={{ textAlign: "center", padding: "8px 12px", border: "1px solid #e5e7eb" }}>-</td>
+              <td
+                style={{
+                  textAlign: "right",
+                  padding: "8px 16px",
+                  border: "1px solid #e5e7eb",
+                  whiteSpace: "nowrap",
+                }}
+              >
                 Rp {order.shipping.cost.toLocaleString()}
               </td>
             </tr>
           )}
 
           <tr style={{ backgroundColor: "#f3f4f6", fontWeight: "bold" }}>
-            <td style={{ padding: "8px", border: "1px solid #e5e7eb" }}>{t.total}</td>
-            <td style={{ textAlign: "right", padding: "8px", border: "1px solid #e5e7eb" }}>
+            <td style={{ padding: "8px 12px", border: "1px solid #e5e7eb" }}>{t.total}</td>
+            <td style={{ border: "1px solid #e5e7eb" }}></td>
+            <td
+              style={{
+                textAlign: "right",
+                padding: "8px 16px",
+                border: "1px solid #e5e7eb",
+                whiteSpace: "nowrap",
+              }}
+            >
               Rp {order.total.toLocaleString()}
             </td>
           </tr>
         </tbody>
       </table>
 
-      {/* Footer Left */}
-      <p style={{ marginTop: "8px", fontSize: "11px", color: "#6b7280", textAlign: "left" }}>
+      <p style={{ marginTop: 8, fontSize: 12, color: "#374151" }}>
+        <strong>{t.status}</strong> Belum Dibayar
+      </p>
+
+      <p style={{ marginTop: 8, fontSize: 12, color: "#6b7280" }}>
         Transfer ke: {t.transfer(order.bank)}
       </p>
     </div>
   );
 }
-

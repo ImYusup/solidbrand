@@ -1,17 +1,16 @@
-// src/components/OrderComplete.tsx
 "use client";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { generateInvoicePDF } from "@/lib/generateInvoicePDF";
-import InvoiceTemplate from "./InvoiceTemplate";
-import ReactDOMServer from "react-dom/server";
+import InvoiceTemplate from "@/components/InvoiceTemplate";
 
 export default function OrderComplete() {
   const router = useRouter();
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const invoiceRef = useRef<HTMLDivElement>(null);
 
+  // ambil data order terakhir
   useEffect(() => {
     const data = localStorage.getItem("latestOrder");
     if (data) {
@@ -22,118 +21,171 @@ export default function OrderComplete() {
     }
   }, [router]);
 
+  const normalizePhone = (p: string) => {
+    if (!p) return "";
+    p = p.replace(/[^0-9+]/g, "");
+    if (p.startsWith("0")) return "62" + p.slice(1);
+    if (p.startsWith("+")) return p.replace("+", "");
+    return p;
+  };
+
+  const formatCurrency = (v: number | string | undefined) => {
+    const n = typeof v === "number" ? v : Number(String(v || 0).replace(/[^0-9.-]/g, ""));
+    return n ? n.toLocaleString("id-ID") : "0";
+  };
+
   useEffect(() => {
-    if (!order || !iframeRef.current) return;
+    if (!order || !invoiceRef.current) return;
 
-    const iframe = iframeRef.current;
-    const doc = iframe.contentDocument;
-    if (!doc) return;
-
-    // inject invoice html into iframe
-    doc.open();
-    doc.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <style>
-            body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
-          </style>
-        </head>
-        <body>
-          <div id="invoice-root"></div>
-        </body>
-      </html>
-    `);
-    doc.close();
-
-    const renderAndDownloadPDF = async () => {
+    const triggerAutomation = async () => {
       try {
-        const html = ReactDOMServer.renderToString(<InvoiceTemplate order={order} />);
-        doc.getElementById("invoice-root")!.innerHTML = html;
+        // kasih waktu render penuh
+        await new Promise((r) => setTimeout(r, 1000));
 
-        const pdfBlob = await generateInvoicePDF(order, doc.body);
-        const url = URL.createObjectURL(pdfBlob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `Invoice_${order.orderId}.pdf`;
-        link.click();
-        URL.revokeObjectURL(url);
-      } catch (e) {
-        console.error("❌ PDF generation error:", e);
+        // 1️⃣ Generate PDF
+        const pdfBlob = await generateInvoicePDF(order, invoiceRef.current!);
+
+        // 2️⃣ Upload ke Google Drive
+        const form = new FormData();
+        form.append("file", pdfBlob, `Invoice_${order.orderId}.pdf`);
+        form.append("orderId", String(order.orderId));
+
+        const uploadRes = await fetch("/api/upload-invoice", {
+          method: "POST",
+          body: form,
+        });
+
+        const { invoiceUrl } = await uploadRes.json();
+        if (!invoiceUrl) throw new Error("Upload gagal");
+
+        const qty = order.quantity ?? 1;
+        const paymentDisplay = order.bank
+          ? `${order.bank.bank} - ${order.bank.account} a.n. ${order.bank.name}`
+          : "QRIS/VA";
+
+        // untuk Sheet hanya prefix-nomor rekening
+        const paymentForSheet = order.bank
+          ? `${order.bank.bank} - ${order.bank.account}`
+          : "QRIS/VA";
+
+        const buyerPhone = normalizePhone(order.billing.phone);
+
+        // 3️⃣ Kirim WhatsApp ke buyer & admin
+        await fetch("/api/send-wa", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            buyerPhone,
+            adminPhone: "6281289066999",
+            orderId: order.orderId,
+            orderDate: order.date,
+            product: order.product.name,
+            total: order.total,
+            quantity: qty,
+            ongkir: order.shippingCost || 0,
+            shipping: order.shippingMethod || "-",
+            bank: paymentDisplay,
+            customer: `${order.billing.firstName} ${order.billing.lastName}`,
+            wa: order.billing.phone,
+            email: order.billing.email || "-",
+            address: `${order.billing.street}, ${order.billing.city}`,
+            status: "Belum Dibayar",
+            pdfUrl: invoiceUrl,
+          }),
+        });
+
+        // 4️⃣ Simpan ke Google Sheet
+        await fetch("/api/send-sheet", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId: order.orderId,
+            orderDate: order.date,
+            product: order.product.name,
+            total: order.total,
+            quantity: qty,
+            ongkir: order.shippingCost || 0,
+            shipping: order.shippingMethod || "-",
+            bank: paymentForSheet, // ✅ hanya nama bank + no rek
+            customer: `${order.billing.firstName} ${order.billing.lastName}`,
+            wa: order.billing.phone,
+            email: order.billing.email || "-",
+            address: `${order.billing.street}, ${order.billing.city}`,
+            status: "Belum Dibayar",
+            pdfUrl: invoiceUrl,
+          }),
+        });
+
+        console.log("✅ Semua proses sukses: Drive + WA + Sheet");
+      } catch (err) {
+        console.error("❌ OrderComplete automation error:", err);
       }
     };
 
-    const sendWhatsAppMessages = async () => {
-      const bankMap: Record<string, { bank: string; account: string; name: string }> = {
-        bca_manual: { bank: "BCA", account: "7390748013", name: "Yusup Juniadi" },
-        bri_manual: { bank: "BRI", account: "746301007264505", name: "Yusup Juniadi" },
-        mandiri_manual: { bank: "Mandiri", account: "1560016268064", name: "Yusup Juniadi" },
-        seabank_manual: { bank: "Sea Bank", account: "901356079886", name: "Yusup Juniadi" },
-      };
-
-      const bankInfo =
-        bankMap[String(order.bank?.key)] ??
-        (order.bank?.bank
-          ? { bank: order.bank.bank, account: order.bank.account, name: order.bank.name }
-          : null);
-
-      const bankText = bankInfo
-        ? `${bankInfo.bank} - ${bankInfo.account} a.n. ${bankInfo.name}`
-        : "QRIS/VA";
-
-      const buyerPhone = order.billing.phone.replace(/[^0-9]/g, "");
-      const buyerWa = buyerPhone.startsWith("0") ? "62" + buyerPhone.slice(1) : buyerPhone;
-
-      const orderDate = new Date().toLocaleDateString("id-ID", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
-
-      const isLocal = buyerPhone.startsWith("08") || buyerPhone.startsWith("62");
-
-      const buyerMessage = isLocal
-        ? `*INVOICE ORDER ANDA*\n\n*Order ID:* ${order.orderId}\n*Produk:* ${order.product.name}\n*Total:* Rp ${order.total.toLocaleString()}\n*Ongkir:* ${order.shipping.cost > 0 ? `Rp ${order.shipping.cost.toLocaleString()} (${order.shipping.method})` : "-"}\n*Bank Tujuan:* ${bankText}\n\nSilakan transfer sesuai nominal di atas.\nSetelah transfer kirim bukti ke WhatsApp admin.`
-        : `*YOUR ORDER INVOICE*\n\n*Order ID:* ${order.orderId}\n*Product:* ${order.product.name}\n*Total:* Rp ${order.total.toLocaleString()}\n*Shipping:* ${order.shipping.cost > 0 ? `Rp ${order.shipping.cost.toLocaleString()} (${order.shipping.method})` : "-"}\n*Bank:* ${bankText}`;
-
-      const adminMessage = `*ORDER BARU TANGGAL ${orderDate}#*\n*ID:* ${order.orderId}\n*Produk:* ${order.product.name}\n*Total:* Rp ${order.total.toLocaleString()}\n*Nama:* ${order.billing.firstName} ${order.billing.lastName}\n*HP:* ${order.billing.phone}\n*Email:* ${order.billing.email}\n*Alamat:* ${order.billing.street}, ${order.billing.city}\n*Bank:* ${bankText}`;
-
-      const sendWa = async (to: string, message: string) => {
-        const res = await fetch("/api/send-wa", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ to, message }),
-        });
-
-        const data = await res.json();
-        if (!res.ok) console.error("❌ WhatsApp Send Error:", data);
-        else console.log("✅ WhatsApp Sent:", { to });
-      };
-
-      await Promise.all([
-        sendWa(buyerWa, buyerMessage),
-        sendWa("6281289066999", adminMessage),
-      ]);
-
-      await renderAndDownloadPDF();
-    };
-
-    sendWhatsAppMessages();
+    const timer = setTimeout(triggerAutomation, 800);
+    return () => clearTimeout(timer);
   }, [order]);
 
-  if (loading) return <div style={{ padding: "2rem", textAlign: "center" }}>Loading...</div>;
+  if (loading) return <div className="p-8 text-center">Loading...</div>;
   if (!order) return null;
 
   return (
-    <div style={{ maxWidth: "1024px", margin: "0 auto", padding: "1rem" }}>
-      <div style={{ backgroundColor: "white", borderRadius: "0.5rem", boxShadow: "0 1px 3px rgba(0,0,0,0.1)", border: "1px solid #e5e7eb", padding: "1.5rem" }}>
-        <h1 style={{ fontSize: "1.875rem", fontWeight: "bold", color: "#16a34a", textAlign: "center", marginBottom: "1.5rem" }}>
+    <div className="max-w-3xl mx-auto p-4 md:p-8">
+      <div className="bg-white rounded-lg shadow-md border p-6 md:p-8">
+        <h1 className="text-3xl font-bold text-green-600 text-center mb-4">
           Order Berhasil!
         </h1>
-        <p style={{ textAlign: "center", color: "#4b5563", marginBottom: "2rem" }}>
-          Invoice otomatis terdownload & dikirim ke WhatsApp Anda.
+        <p className="text-center text-gray-600 mb-6">
+          Invoice otomatis dikirim ke WhatsApp Anda.
         </p>
-        <iframe ref={iframeRef} style={{ position: "absolute", left: "-9999px", width: "1px", height: "1px", border: "none" }} />
+
+        {/* Detail Order */}
+        <div className="space-y-2 text-gray-800 leading-relaxed">
+          <p><strong>Order ID:</strong> {order.orderId}</p>
+          <p><strong>Tanggal:</strong> {order.date}</p>
+          <p><strong>Nama:</strong> {order.billing.firstName} {order.billing.lastName}</p>
+          <p><strong>WhatsApp:</strong> {order.billing.phone}</p>
+          <p><strong>Produk:</strong> {order.product.name}</p>
+          <p><strong>Jumlah:</strong> {order.quantity ?? 1}</p>
+          <p><strong>Total:</strong> Rp {formatCurrency(order.total)}</p>
+          <p><strong>Alamat:</strong> {order.billing.street}, {order.billing.city}</p>
+          <p>
+            <strong>Metode Pembayaran:</strong>{" "}
+            {order.bank
+              ? `${order.bank.bank} - ${order.bank.account} a.n. ${order.bank.name}`
+              : "QRIS/VA"}
+          </p>
+          <p><strong>Status:</strong> Belum Dibayar</p>
+        </div>
+
+        <div className="text-center mt-6">
+          <a
+            href={`https://wa.me/6281289066999?text=${encodeURIComponent(
+              `Hi Admin,\n\nBerikut untuk lampiran bukti transfer dengan Order ID : ${order.orderId}\n\nTerima Kasih!`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold px-8 py-3 rounded-lg transition-all duration-200"
+          >
+            Konfirmasi Pembayaran
+          </a>
+        </div>
+
+        {/* elemen hidden buat PDF */}
+        <div
+          ref={invoiceRef}
+          style={{
+            position: "absolute",
+            top: "-9999px",
+            left: "-9999px",
+            width: "210mm",
+            background: "#ffffff",
+            opacity: 1,
+            zIndex: -1,
+          }}
+        >
+          <InvoiceTemplate order={order} />
+        </div>
       </div>
     </div>
   );

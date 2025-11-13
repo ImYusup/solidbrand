@@ -1,4 +1,3 @@
-// ✅ FINAL CartSidebar.tsx (support Xendit + fallback Midtrans)
 // src/components/CartSidebar.tsx
 "use client";
 
