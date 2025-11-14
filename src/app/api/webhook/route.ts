@@ -1,4 +1,3 @@
-// app/api/webhook/route.ts
 import { NextRequest, NextResponse } from "next/server";
 
 const ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN!;
@@ -6,25 +5,27 @@ const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID!;
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN!;
 
 /**
- * ✅ Verifikasi Webhook (GET)
- * Meta akan mengirimkan ?hub.mode, ?hub.verify_token, ?hub.challenge
+ * =========================================================
+ *  ✅ VERIFY WEBHOOK (GET)
+ * =========================================================
  */
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
+
     const mode = searchParams.get("hub.mode");
     const token = searchParams.get("hub.verify_token");
     const challenge = searchParams.get("hub.challenge");
 
-    console.log("🔍 VERIFY REQUEST:", { mode, token, challenge });
+    console.log("🔍 WEBHOOK VERIFY REQUEST:", { mode, token, challenge });
 
     if (mode === "subscribe" && token === VERIFY_TOKEN) {
       console.log("✅ WEBHOOK VERIFIED SUCCESS");
       return new Response(challenge, { status: 200 });
-    } else {
-      console.warn("❌ Verification failed");
-      return new Response("Verification failed", { status: 403 });
     }
+
+    console.warn("❌ WEBHOOK VERIFICATION FAILED");
+    return new Response("Verification failed", { status: 403 });
   } catch (err) {
     console.error("🔥 GET webhook error:", err);
     return new Response("Internal Server Error", { status: 500 });
@@ -32,7 +33,9 @@ export async function GET(req: NextRequest) {
 }
 
 /**
- * ✅ Handle pesan masuk (POST)
+ * =========================================================
+ *  ✅ HANDLE INCOMING WEBHOOK (POST)
+ * =========================================================
  */
 export async function POST(req: NextRequest) {
   try {
@@ -40,24 +43,27 @@ export async function POST(req: NextRequest) {
     console.log("📩 Incoming webhook:", JSON.stringify(body, null, 2));
 
     const entry = body.entry?.[0];
-    const changes = entry?.changes?.[0];
-    const message = changes?.value?.messages?.[0];
+    const change = entry?.changes?.[0];
+    const messages = change?.value?.messages?.[0];
 
-    if (!message) {
-      console.log("⚠️ No message found in webhook payload");
-      return NextResponse.json({ status: "No message" });
+    if (!messages) {
+      console.log("⚠️ No message found in payload");
+      return NextResponse.json({ status: "no_message" });
     }
 
-    const from = message.from;
-    const type = message.type;
+    const from = messages.from;
+    const type = messages.type;
 
+    // ================================
+    //  📨 Text Message Received
+    // ================================
     if (type === "text") {
-      const text = message.text?.body;
-      console.log(`💬 Text from ${from}: ${text}`);
+      const text = messages.text?.body;
+      console.log(`💬 TEXT FROM ${from}:`, text);
 
-      // ✅ Kirim balasan ke WhatsApp
-      const res = await fetch(
-        `https://graph.facebook.com/v19.0/${PHONE_NUMBER_ID}/messages`,
+      // 🔥 SEND AUTO REPLY
+      const reply = await fetch(
+        `https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`,
         {
           method: "POST",
           headers: {
@@ -69,19 +75,22 @@ export async function POST(req: NextRequest) {
             to: from,
             type: "text",
             text: {
-              body: `Halo ${from}! Terima kasih sudah menghubungi kami 🙌`,
+              body: `Halo! Terima kasih sudah menghubungi kami 🙌\nPesanmu: "${text}"`,
             },
           }),
         }
       );
 
-      const data = await res.json();
-      console.log("📤 Reply sent:", data);
+      const replyResult = await reply.json();
+      console.log("📤 Reply sent:", replyResult);
     }
 
-    return NextResponse.json({ status: "OK" });
+    return NextResponse.json({ status: "ok" });
   } catch (err) {
     console.error("🔥 POST webhook error:", err);
-    return NextResponse.json({ status: "Error", message: String(err) }, { status: 500 });
+    return NextResponse.json(
+      { status: "error", message: String(err) },
+      { status: 500 }
+    );
   }
 }
