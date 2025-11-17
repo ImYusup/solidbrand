@@ -1,9 +1,9 @@
 // src/components/CheckoutForm.tsx
 "use client";
-
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { products, Product } from "@/data/products";
+import { products } from "@/data/products";
+import PaypalCard from "@/components/PaypalCard";
 
 type PaymentMethod =
   | "bca_manual"
@@ -15,20 +15,35 @@ type PaymentMethod =
   | "bri_va"
   | "mandiri_va"
   | "bni_va"
-  | "bank_other"
   | "card"
   | "crypto";
 
+type OrderItem = {
+  productId: string;
+  variantId: string;
+  title: string;
+  price: number;
+  quantity: number;
+  image?: string;
+};
+
+type OrderData = {
+  order_id: string;
+  items: OrderItem[];
+  subtotal: number;
+};
+
 export default function CheckoutForm() {
+  // === 1. HOOKS & STATE (SEMUA DI ATAS return) ===
   const searchParams = useSearchParams();
   const router = useRouter();
-  const productId = searchParams.get("product");
+  const orderId = searchParams.get("order_id");
 
-  const product: Product | undefined = products.find(p => p.id === productId);
-  const selectedProduct = product || products[0];
-  const productPrice = selectedProduct.discountPrice || selectedProduct.price;
-  const productName = selectedProduct.name;
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [loadingOrder, setLoadingOrder] = useState(true);
+  const [orderError, setOrderError] = useState("");
 
+  // Billing
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -43,6 +58,7 @@ export default function CheckoutForm() {
   const [notes, setNotes] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
 
+  // Shipping & Payment
   const [provinces, setProvinces] = useState<any[]>([]);
   const [cities, setCities] = useState<any[]>([]);
   const [shippingCosts, setShippingCosts] = useState<any[]>([]);
@@ -50,6 +66,7 @@ export default function CheckoutForm() {
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod | null>(null);
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
+  const [copied, setCopied] = useState(false);
 
   const bankInfo: Record<string, { bank: string; account: string; name: string }> = {
     bca_manual: { bank: "BCA", account: "7390 7480 13", name: "Yusup Juniadi" },
@@ -68,11 +85,19 @@ export default function CheckoutForm() {
     { id: "bri_va", title: "BRI Virtual Account", icons: ["https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/bri_va.png"], desc: "Transfer ke BRI VA." },
     { id: "mandiri_va", title: "Mandiri Virtual Account", icons: ["https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/echannel.png"], desc: "Gunakan VA Mandiri." },
     { id: "bni_va", title: "BNI Virtual Account", icons: ["https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/bni_va.png"], desc: "Bayar via BNI." },
-    { id: "bank_other", title: "Bank Transfer - Other", icons: ["https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/other_va_1.png"], desc: "Permata, CIMB, dll." },
-    { id: "card", title: "Credit/Debit Card", icons: ["https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/cc_visa.png", "https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/cc_master.png"], desc: "VISA, MasterCard, JCB, Amex." },
-    { id: "crypto", title: "Cryptocurrency USDT/BTC/ETH/BNB/SOL", icons: ["/icons/usdt.svg"], desc: "Bayar dengan USDT, BTC, ETH." },
+    {
+      id: "card",
+      title: "Credit/Debit Card",
+      icons: [
+        "https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/cc_visa.png",
+        "https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/cc_master.png"
+      ],
+      desc: "VISA, MasterCard, JCB, Amex."
+    },
+    { id: "crypto", title: "Cryptocurrency USDT (TRC20)", icons: ["/icons/usdt.svg"], desc: "TFmZHeEjR9P2jjCp1NhKzXLicwdrAXfCFN" },
   ];
 
+  // === 2. useEffect ===
   useEffect(() => {
     fetch("/api/shipping/province")
       .then(r => r.json())
@@ -81,25 +106,53 @@ export default function CheckoutForm() {
       });
   }, []);
 
+  useEffect(() => {
+    if (cityId && weight) getShippingCosts();
+  }, [cityId, weight]);
+
+  useEffect(() => {
+    if (!orderId) {
+      setLoadingOrder(false);
+      setOrderError("Tidak ada order ID. Silakan checkout dari keranjang.");
+      return;
+    }
+    const saved = localStorage.getItem(`order_${orderId}`);
+    if (!saved) {
+      setOrderError("Order tidak ditemukan. Silakan ulangi dari keranjang.");
+      setLoadingOrder(false);
+      return;
+    }
+    try {
+      const data: OrderData = JSON.parse(saved);
+      setOrderItems(data.items);
+      const totalWeight = data.items.reduce((sum, item) => sum + item.quantity * 250, 0);
+      setWeight(totalWeight);
+    } catch {
+      setOrderError("Data order rusak.");
+    } finally {
+      setLoadingOrder(false);
+    }
+  }, [orderId]);
+
+  useEffect(() => {
+    setEmailError(email.includes("@") || email === "" ? "" : "Email harus mengandung @");
+  }, [email]);
+
+  // === 3. FUNGSI ===
   const loadCities = async (provinceId: number) => {
     if (!provinceId) return;
     setLoading(true);
     try {
       const res = await fetch(`/api/shipping/city/${provinceId}`);
-      if (!res.ok) {
-        const text = await res.text();
-        console.error("HTTP Error:", res.status, text);
-        setCities([]);
-        return;
-      }
+      if (!res.ok) throw new Error("Failed to load cities");
       const data = await res.json();
       if (data.success && Array.isArray(data.cities)) {
         setCities(data.cities);
       } else {
         setCities([]);
       }
-    } catch (e: any) {
-      console.error("Fetch Error:", e.message);
+    } catch (e) {
+      console.error(e);
       setCities([]);
     } finally {
       setLoading(false);
@@ -118,7 +171,6 @@ export default function CheckoutForm() {
       const data = await res.json();
       if (data.success && data.costs.length > 0) {
         let filtered = data.costs;
-
         if (weight < 10000) {
           filtered = filtered.filter((c: any) => c.service === "REG");
         } else if (weight < 100000) {
@@ -130,7 +182,6 @@ export default function CheckoutForm() {
           setLoading(false);
           return;
         }
-
         setShippingCosts(filtered);
         if (filtered.length > 0) {
           setSelectedShipping(`JNE-${filtered[0].service}`);
@@ -145,23 +196,15 @@ export default function CheckoutForm() {
     }
   };
 
-  useEffect(() => {
-    if (cityId && weight) getShippingCosts();
-  }, [cityId, weight]);
-
   const shippingCost = shippingCosts.find(c => `JNE-${c.service}` === selectedShipping)?.cost || 0;
-  const total = productPrice + shippingCost;
-
-  useEffect(() => {
-    setEmailError(email.includes("@") || email === "" ? "" : "Email harus mengandung @");
-  }, [email]);
+  const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total = subtotal + shippingCost;
 
   const isButtonDisabled =
     !selectedPayment ||
     !selectedShipping ||
-    total === productPrice ||
-    emailError !== "" ||
     shippingCosts.length === 0 ||
+    emailError !== "" ||
     !email.includes("@") ||
     !firstName ||
     !lastName ||
@@ -170,14 +213,15 @@ export default function CheckoutForm() {
     !phone ||
     !provinceId ||
     !cityId ||
-    !agreeTerms;
+    !agreeTerms ||
+    orderItems.length === 0;
 
   const handlePlaceOrder = () => {
     const orderData = {
-      orderId: Math.floor(10000 + Math.random() * 90000),
+      orderId,
       date: new Date().toLocaleDateString("id-ID", { year: "numeric", month: "long", day: "numeric" }),
-      product: selectedProduct,
-      price: productPrice,
+      items: orderItems,
+      subtotal,
       shipping: { method: selectedShipping, cost: shippingCost },
       total,
       payment: selectedPayment,
@@ -196,11 +240,51 @@ export default function CheckoutForm() {
       },
       notes,
     };
-
     localStorage.setItem("latestOrder", JSON.stringify(orderData));
     router.push("/order-complete");
   };
 
+  const handleCopyAddress = async () => {
+    const address = "TFmZHeEjR9P2jjCp1NhKzXLicwdrAXfCFN";
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(address);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+        return;
+      } catch (err) {
+        console.warn("Clipboard API failed:", err);
+      }
+    }
+    const textarea = document.createElement("textarea");
+    textarea.value = address;
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    textarea.style.left = "-9999px";
+    document.body.appendChild(textarea);
+    try {
+      textarea.focus();
+      textarea.select();
+      textarea.setSelectionRange(0, 99999);
+      const success = document.execCommand("copy");
+      if (success) {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+      } else {
+        throw new Error();
+      }
+    } catch {
+      alert(`Silakan copy manual:\n\n${address}`);
+    } finally {
+      document.body.removeChild(textarea);
+    }
+  };
+
+  // === 4. EARLY RETURN ===
+  if (loadingOrder) return <div className="text-center py-10">Memuat pesanan...</div>;
+  if (orderError) return <div className="text-center py-10 text-red-600">{orderError}</div>;
+
+  // === 5. RENDER ===
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-6">
       <div className="grid lg:grid-cols-2 gap-8">
@@ -225,54 +309,23 @@ export default function CheckoutForm() {
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">First name *</label>
-                <input
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-md"
-                  required
-                />
+                <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="w-full px-4 py-2 border rounded-md" required />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Last name *</label>
-                <input
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-md"
-                  required
-                />
+                <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} className="w-full px-4 py-2 border rounded-md" required />
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Company name (optional)</label>
-              <input
-                type="text"
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
-                placeholder="none"
-                className="w-full px-4 py-2 border rounded-md"
-              />
+              <input type="text" value={company} onChange={(e) => setCompany(e.target.value)} placeholder="none" className="w-full px-4 py-2 border rounded-md" />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Street address *</label>
-              <input
-                type="text"
-                value={street}
-                onChange={(e) => setStreet(e.target.value)}
-                placeholder="House number and street name"
-                className="w-full px-4 py-2 border rounded-md mb-2"
-                required
-              />
-              <input
-                type="text"
-                value={apartment}
-                onChange={(e) => setApartment(e.target.value)}
-                placeholder="Apartment, suite, unit, etc. (optional)"
-                className="w-full px-4 py-2 border rounded-md"
-              />
+              <input type="text" value={street} onChange={(e) => setStreet(e.target.value)} placeholder="House number and street name" className="w-full px-4 py-2 border rounded-md mb-2" required />
+              <input type="text" value={apartment} onChange={(e) => setApartment(e.target.value)} placeholder="Apartment, suite, unit, etc. (optional)" className="w-full px-4 py-2 border rounded-md" />
             </div>
 
             <div>
@@ -285,12 +338,10 @@ export default function CheckoutForm() {
                   loadCities(id);
                   setCityId(0);
                 }}
-                className="w-full px-4 py-2 border rounded-md max-h-48 overflow-y-auto"
+                className="w-full px-4 py-2 border rounded-md"
               >
                 <option value={0}>Pilih Provinsi</option>
-                {provinces.map(p => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
+                {provinces.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
 
@@ -299,36 +350,22 @@ export default function CheckoutForm() {
               <select
                 value={cityId}
                 onChange={(e) => setCityId(Number(e.target.value))}
-                className="w-full px-4 py-2 border rounded-md max-h-48 overflow-y-auto"
+                className="w-full px-4 py-2 border rounded-md"
                 disabled={!provinceId}
               >
                 <option value={0}>Pilih Kota</option>
-                {cities.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
+                {cities.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Kode Pos *</label>
-                <input
-                  type="text"
-                  value={postalCode}
-                  onChange={(e) => setPostalCode(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-md"
-                  required
-                />
+                <input type="text" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} className="w-full px-4 py-2 border rounded-md" required />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-md"
-                  required
-                />
+                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-4 py-2 border rounded-md" required />
               </div>
             </div>
 
@@ -344,14 +381,12 @@ export default function CheckoutForm() {
             </div>
 
             {loading && <p className="text-blue-600">Menghitung ongkir JNE...</p>}
+
             {shippingCosts.length > 0 && (
               <div className="space-y-2 p-4 bg-blue-50 rounded-lg">
                 <p className="font-medium text-blue-800">Pilih Layanan JNE:</p>
                 {shippingCosts.map((cost, i) => (
-                  <label
-                    key={i}
-                    className="flex items-center justify-between p-2 border rounded cursor-pointer hover:bg-blue-100"
-                  >
+                  <label key={i} className="flex items-center justify-between p-2 border rounded cursor-pointer hover:bg-blue-100">
                     <div>
                       <strong>JNE {cost.service}</strong> - {cost.description}
                       <p className="text-xs text-gray-600">{cost.etd} hari</p>
@@ -370,6 +405,7 @@ export default function CheckoutForm() {
                 ))}
               </div>
             )}
+
             {shippingCosts.length === 0 && cityId > 0 && weight > 0 && (
               <p className="text-red-600 p-4 bg-red-50 rounded-lg">
                 Tidak ada layanan JNE untuk berat {weight / 1000}kg. Hubungi admin.
@@ -387,15 +423,8 @@ export default function CheckoutForm() {
               />
             </div>
 
-            {/* FIXED: required only */}
             <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={agreeTerms}
-                onChange={(e) => setAgreeTerms(e.target.checked)}
-                className="mt-1"
-                required
-              />
+              <input type="checkbox" checked={agreeTerms} onChange={(e) => setAgreeTerms(e.target.checked)} className="mt-1" required />
               <span className="text-sm text-gray-700">
                 I have read and agree to the website <a href="#" className="text-blue-600 underline">terms and conditions</a> *
               </span>
@@ -403,29 +432,27 @@ export default function CheckoutForm() {
           </form>
         </div>
 
-        {/* RIGHT: ORDER */}
+        {/* RIGHT: YOUR ORDER */}
         <div>
           <h2 className="text-2xl font-bold mb-6 text-gray-800">YOUR ORDER</h2>
           <div className="bg-gray-50 rounded-lg p-6 space-y-4">
-            <div className="flex justify-between border-b pb-2">
-              <span>{productName}</span>
-              <span className="font-medium">
-                {selectedProduct.discountPrice ? (
-                  <>
-                    <span className="line-through text-gray-500">Rp {selectedProduct.price.toLocaleString()}</span>{" "}
-                    <span className="text-green-600 font-bold">Rp {productPrice.toLocaleString()}</span>
-                  </>
-                ) : (
-                  `Rp ${productPrice.toLocaleString()}`
-                )}
-              </span>
-            </div>
+            {orderItems.map((item, i) => (
+              <div key={i} className="flex justify-between border-b pb-2">
+                <div>
+                  <span className="font-medium">{item.title}</span>
+                  <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                </div>
+                <span className="font-medium">Rp {(item.price * item.quantity).toLocaleString()}</span>
+              </div>
+            ))}
+
             {shippingCost > 0 && (
               <div className="flex justify-between border-b pb-2">
                 <span>Ongkir ({selectedShipping})</span>
                 <span className="font-medium">Rp {shippingCost.toLocaleString()}</span>
               </div>
             )}
+
             <div className="flex justify-between text-lg font-bold pt-2">
               <span>TOTAL</span>
               <span className="text-blue-600">Rp {total.toLocaleString()}</span>
@@ -453,23 +480,90 @@ export default function CheckoutForm() {
                         <img key={i} src={icon} alt="" className="h-6 object-contain" />
                       ))}
                     </div>
-                    {selectedPayment === method.id && (
+                    {selectedPayment === method.id && method.id !== "crypto" && method.id !== "card" && (
                       <p className="mt-2 text-sm text-gray-600">{method.desc}</p>
                     )}
                   </div>
                 </label>
               ))}
+
+              {/* === CRYPTO SECTION (DI LUAR MAP) === */}
+              {selectedPayment === "crypto" && (
+                <div className="mt-3 space-y-3 p-4 bg-gray-100 border rounded-lg">
+                  <p className="font-semibold text-gray-800">USDT (TRC20) Wallet Address</p>
+                  <div className="flex justify-center">
+                    <img
+                      src="/payment/usdt-trc20.png"
+                      alt="USDT TRC20 QR Code"
+                      className="w-44 h-44 object-contain bg-white border rounded-lg p-2 shadow-sm"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between bg-white p-3 rounded-md border font-mono text-sm">
+                    <span className="flex-1 break-all select-all pr-2 text-gray-800">
+                      TFmZHeEjR9P2jjCp1NhKzXLicwdrAXfCFN
+                    </span>
+                    <button
+                      onClick={handleCopyAddress}
+                      className={`px-3 py-1 text-xs rounded font-medium transition-all ${copied ? "bg-green-600" : "bg-blue-600 hover:bg-blue-700"
+                        } text-white shadow-sm`}
+                    >
+                      {copied ? "Copied!" : "Copy"}
+                    </button>
+                  </div>
+                  <div className="bg-red-50 border border-red-200 rounded p-2 text-xs text-red-700">
+                    <p><strong>WARNING:</strong> Only send on <b>TRC20 network (USDT)</b>. Wrong network = funds lost.</p>
+                    <p className="mt-1">Exact amount: <strong>Rp {total.toLocaleString()}</strong> ≈ <strong>${(total / 16000).toFixed(2)} USDT</strong></p>
+                  </div>
+                  <div className="text-xs text-gray-600">
+                    <p><strong>Steps:</strong></p>
+                    <ol className="list-decimal list-inside space-y-1">
+                      <li>Copy wallet address or scan QR code</li>
+                      <li>Open your TRC20 wallet (Trust Wallet, Binance, etc.)</li>
+                      <li>Send exact amount: Rp {total.toLocaleString()}</li>
+                      <li>Include Order ID: <strong>{orderId}</strong> in memo</li>
+                      <li>Confirmation within 30 minutes</li>
+                    </ol>
+                  </div>
+                </div>
+              )}
+
+              {/* PAYPAL CARD */}
+              {selectedPayment === "card" && (
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
+                  <PaypalCard
+                    amount={total}
+                    currency="IDR"
+                    onComplete={(payload) => {
+                      const orderData = { orderId, items: orderItems, subtotal, total, payment: "card", paypalOrderId: payload.orderID, billing: { email, firstName, lastName, street, city: cities.find(c => c.id === cityId)?.name || "", postalCode, phone } };
+                      localStorage.setItem("latestOrder", JSON.stringify(orderData));
+                      router.push("/order-complete?payment=paypal_card");
+                    }}
+                    onError={(err) => alert("Pembayaran gagal: " + (err.message || "Coba lagi"))}
+                  />
+                </div>
+              )}
             </div>
 
             <button
               onClick={handlePlaceOrder}
               disabled={isButtonDisabled}
-              className={`w-full mt-6 py-4 rounded-lg font-bold text-white transition-all ${!isButtonDisabled ? "bg-green-600 hover:bg-green-700" : "bg-gray-400 cursor-not-allowed"
+              className={`w-full mt-6 py-4 rounded-xl font-bold text-white text-lg tracking-wide transition-all shadow-lg flex items-center justify-center gap-3 ${!isButtonDisabled
+                  ? "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transform hover:scale-[1.02]"
+                  : "bg-gray-400 cursor-not-allowed"
                 }`}
             >
-              KONFIRMASI PEMBAYARAN - Rp {total.toLocaleString()}
+              {!isButtonDisabled ? (
+                <>
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  KONFIRMASI & LANJUTKAN
+                </>
+              ) : (
+                "Lengkapi data & pilih pembayaran"
+              )}
+              <span className="ml-2">— Rp {total.toLocaleString()}</span>
             </button>
-
 
           </div>
         </div>

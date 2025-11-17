@@ -1,3 +1,4 @@
+// src/components/OrderComplete.tsx
 "use client";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -10,11 +11,11 @@ export default function OrderComplete() {
   const [loading, setLoading] = useState(true);
   const invoiceRef = useRef<HTMLDivElement>(null);
 
-  // ambil data order terakhir
   useEffect(() => {
     const data = localStorage.getItem("latestOrder");
     if (data) {
-      setOrder(JSON.parse(data));
+      const parsed = JSON.parse(data);
+      setOrder(parsed);
       setLoading(false);
     } else {
       router.push("/");
@@ -34,43 +35,38 @@ export default function OrderComplete() {
     return n ? n.toLocaleString("id-ID") : "0";
   };
 
+  // === SUPPORT MULTI-ITEM ===
+  const items = order?.items || [];
+  const totalQty = items.reduce((sum: number, i: any) => sum + (i.quantity || 0), 0);
+  const productList = items.map((i: any) => `${i.title} (x${i.quantity})`).join(", ");
+  const productForWA = items.map((i: any) => `${i.title} x${i.quantity}`).join("\n");
+
   useEffect(() => {
     if (!order || !invoiceRef.current) return;
 
     const triggerAutomation = async () => {
       try {
-        // kasih waktu render penuh
         await new Promise((r) => setTimeout(r, 1000));
 
-        // 1️⃣ Generate PDF
         const pdfBlob = await generateInvoicePDF(order, invoiceRef.current!);
-
-        // 2️⃣ Upload ke Google Drive
         const form = new FormData();
         form.append("file", pdfBlob, `Invoice_${order.orderId}.pdf`);
         form.append("orderId", String(order.orderId));
 
-        const uploadRes = await fetch("/api/upload-invoice", {
-          method: "POST",
-          body: form,
-        });
-
+        const uploadRes = await fetch("/api/upload-invoice", { method: "POST", body: form });
         const { invoiceUrl } = await uploadRes.json();
         if (!invoiceUrl) throw new Error("Upload gagal");
 
-        const qty = order.quantity ?? 1;
         const paymentDisplay = order.bank
           ? `${order.bank.bank} - ${order.bank.account} a.n. ${order.bank.name}`
-          : "QRIS/VA";
+          : order.payment === "qris" ? "QRIS" : "Virtual Account";
 
-        // untuk Sheet hanya prefix-nomor rekening
         const paymentForSheet = order.bank
           ? `${order.bank.bank} - ${order.bank.account}`
-          : "QRIS/VA";
+          : order.payment === "qris" ? "QRIS" : "VA";
 
         const buyerPhone = normalizePhone(order.billing.phone);
 
-        // 3️⃣ Kirim WhatsApp ke buyer & admin
         await fetch("/api/send-wa", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -79,34 +75,33 @@ export default function OrderComplete() {
             adminPhone: "6281289066999",
             orderId: order.orderId,
             orderDate: order.date,
-            product: order.product.name,
+            product: productForWA,
             total: order.total,
-            quantity: qty,
-            ongkir: order.shippingCost || 0,
-            shipping: order.shippingMethod || "-",
+            quantity: totalQty,
+            ongkir: order.shipping?.cost || 0,
+            shipping: order.shipping?.method || "-",
             bank: paymentDisplay,
             customer: `${order.billing.firstName} ${order.billing.lastName}`,
             wa: order.billing.phone,
             email: order.billing.email || "-",
-            address: `${order.billing.street}, ${order.billing.city}`,
+            address: `${order.billing.street}, ${order.billing.apartment ? order.billing.apartment + ", " : ""}${order.billing.city}`,
             status: "Belum Dibayar",
             pdfUrl: invoiceUrl,
           }),
         });
 
-        // 4️⃣ Simpan ke Google Sheet
         await fetch("/api/send-sheet", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             orderId: order.orderId,
             orderDate: order.date,
-            product: order.product.name,
+            product: productList,
             total: order.total,
-            quantity: qty,
-            ongkir: order.shippingCost || 0,
-            shipping: order.shippingMethod || "-",
-            bank: paymentForSheet, // ✅ hanya nama bank + no rek
+            quantity: totalQty,
+            ongkir: order.shipping?.cost || 0,
+            shipping: order.shipping?.method || "-",
+            bank: paymentForSheet,
             customer: `${order.billing.firstName} ${order.billing.lastName}`,
             wa: order.billing.phone,
             email: order.billing.email || "-",
@@ -116,9 +111,9 @@ export default function OrderComplete() {
           }),
         });
 
-        console.log("✅ Semua proses sukses: Drive + WA + Sheet");
-      } catch (err) {
-        console.error("❌ OrderComplete automation error:", err);
+        console.log("Semua proses sukses: Drive + WA + Sheet");
+      } catch (err: any) {
+        console.error("OrderComplete automation error:", err);
       }
     };
 
@@ -139,29 +134,32 @@ export default function OrderComplete() {
           Invoice otomatis dikirim ke WhatsApp Anda.
         </p>
 
-        {/* Detail Order */}
         <div className="space-y-2 text-gray-800 leading-relaxed">
           <p><strong>Order ID:</strong> {order.orderId}</p>
           <p><strong>Tanggal:</strong> {order.date}</p>
           <p><strong>Nama:</strong> {order.billing.firstName} {order.billing.lastName}</p>
           <p><strong>WhatsApp:</strong> {order.billing.phone}</p>
-          <p><strong>Produk:</strong> {order.product.name}</p>
-          <p><strong>Jumlah:</strong> {order.quantity ?? 1}</p>
+          <p><strong>Produk:</strong> {productList || "Tidak ada item"}</p>
+          <p><strong>Jumlah Item:</strong> {totalQty}</p>
+          <p><strong>Subtotal:</strong> Rp {formatCurrency(order.subtotal)}</p>
+          {order.shipping?.cost > 0 && (
+            <p><strong>Ongkir ({order.shipping.method}):</strong> Rp {formatCurrency(order.shipping.cost)}</p>
+          )}
           <p><strong>Total:</strong> Rp {formatCurrency(order.total)}</p>
-          <p><strong>Alamat:</strong> {order.billing.street}, {order.billing.city}</p>
+          <p><strong>Alamat:</strong> {order.billing.street}{order.billing.apartment ? ", " + order.billing.apartment : ""}, {order.billing.city}, {order.billing.province}</p>
           <p>
             <strong>Metode Pembayaran:</strong>{" "}
             {order.bank
               ? `${order.bank.bank} - ${order.bank.account} a.n. ${order.bank.name}`
-              : "QRIS/VA"}
+              : order.payment === "qris" ? "QRIS" : "Virtual Account / Lainnya"}
           </p>
-          <p><strong>Status:</strong> Belum Dibayar</p>
+          <p><strong>Status:</strong> <span className="text-orange-600 font-medium">Belum Dibayar</span></p>
         </div>
 
         <div className="text-center mt-6">
           <a
             href={`https://wa.me/6281289066999?text=${encodeURIComponent(
-              `Hi Admin,\n\nBerikut untuk lampiran bukti transfer dengan Order ID : ${order.orderId}\n\nTerima Kasih!`
+              `Hi Admin,\n\nBerikut untuk lampiran bukti transfer dengan Order ID: ${order.orderId}\n\nTerima Kasih!`
             )}`}
             target="_blank"
             rel="noopener noreferrer"
@@ -171,7 +169,7 @@ export default function OrderComplete() {
           </a>
         </div>
 
-        {/* elemen hidden buat PDF */}
+        {/* Hidden PDF Template */}
         <div
           ref={invoiceRef}
           style={{

@@ -2,6 +2,7 @@
 import { create } from "zustand";
 
 export type CartItem = {
+  productId: string;      
   variantId: string;
   title: string;
   price: number;
@@ -26,21 +27,25 @@ export const useCart = create<CartState>((set) => ({
 
   addItem: (item: CartItem) =>
     set((state) => {
-      const existing = state.items.find((i) => i.variantId === item.variantId);
+      const existing = state.items.find(
+        (i) => i.variantId === item.variantId
+      );
+
       const updatedItems = existing
         ? state.items.map((i) =>
-          i.variantId === item.variantId
-            ? { ...i, quantity: i.quantity + item.quantity }
-            : i
-        )
+            i.variantId === item.variantId
+              ? { ...i, quantity: i.quantity + item.quantity }
+              : i
+          )
         : [...state.items, item];
+
       return { items: updatedItems, showCart: true };
     }),
 
   removeItem: (variantId: string) =>
     set((state) => ({
       items: state.items.filter((i) => i.variantId !== variantId),
-      showCart: state.showCart, // ✅ jangan ketimpa jadi undefined
+      showCart: state.showCart,
     })),
 
   clearCart: () => set({ items: [] }),

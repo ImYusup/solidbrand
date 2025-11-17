@@ -1,12 +1,14 @@
 // src/components/CartSidebar.tsx
 "use client";
-
 import { useCart, CartItem } from "@/lib/cart-store";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { products } from "@/data/products";
 
 export default function CartSidebar() {
   const { items, removeItem, clearCart, showCart, setShowCart } = useCart();
   const [loadingCheckout, setLoadingCheckout] = useState(false);
+  const router = useRouter();
 
   if (!showCart) return null;
 
@@ -18,86 +20,57 @@ export default function CartSidebar() {
     }).format(num);
 
   const checkout = async () => {
-    if (loadingCheckout) return;
+    if (loadingCheckout || items.length === 0) return;
     setLoadingCheckout(true);
 
     try {
-      const payload = {
-        items: items.map((i: CartItem) => ({
-          productId: i.variantId,
-          quantity: i.quantity,
-        })),
-        customer: {
-          name: "Guest",
-          email: "guest@example.com",
-        },
-      };
+      // BUAT ORDER ID PENDEK: ORD-16112025-212045
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, "0");
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const year = now.getFullYear();
+      const hours = String(now.getHours()).padStart(2, "0");
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      const seconds = String(now.getSeconds()).padStart(2, "0");
+      const orderId = `ORD-${day}${month}${year}-${hours}${minutes}${seconds}`;
 
-      console.log("🛒 Checkout payload:", payload);
-
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+      // ENRICH ITEMS DENGAN DATA PRODUK
+      const enrichedItems = items.map((item: CartItem) => {
+        const product = products.find(p => p.id === item.productId);
+        return {
+          productId: item.productId,
+          variantId: item.variantId || "",
+          title: product?.name || item.title,
+          price: product?.discountPrice || product?.price || item.price,
+          quantity: item.quantity,
+          image: product?.images?.[0] || item.image,
+        };
       });
 
-      if (!res.ok) {
-        console.error("❌ Server error:", res.status, res.statusText);
-        setLoadingCheckout(false);
-        return;
-      }
+      const subtotal = enrichedItems.reduce((sum: number, i: any) => sum + i.price * i.quantity, 0);
 
-      const data = await res.json();
-      console.log("✅ API response:", data);
+      // SIMPAN KE localStorage
+      localStorage.setItem(`order_${orderId}`, JSON.stringify({
+        order_id: orderId,
+        items: enrichedItems,
+        subtotal,
+      }));
 
-      // ✅ Xendit flow
-      if (data?.invoice_url) {
-        console.log("💳 Redirecting to Xendit invoice:", data.invoice_url);
-        window.location.href = data.invoice_url;
-        return;
-      }
+      console.log("Order disimpan di localStorage:", `order_${orderId}`);
+      console.log("Redirect ke checkout...");
 
-      // ✅ Midtrans fallback
-      if (data?.token && typeof window !== "undefined" && (window as any).snap) {
-        // @ts-ignore
-        window.snap.pay(data.token, {
-          onSuccess: (result: any) => {
-            console.log("✅ Success:", result);
-            clearCart();
-            setLoadingCheckout(false);
-          },
-          onPending: (result: any) => {
-            console.log("⏳ Pending:", result);
-            setLoadingCheckout(false);
-          },
-          onError: (err: any) => {
-            console.error("❌ Error:", err);
-            setLoadingCheckout(false);
-          },
-          onClose: () => {
-            console.warn("❌ User closed the popup without finishing payment");
-            setLoadingCheckout(false);
-          },
-        });
-        return;
-      }
-
-      // ❌ Invalid response
-      console.error("❌ Invalid response from API:", data);
-      setLoadingCheckout(false);
+      // REDIRECT KE CHECKOUT
+      router.push(`/checkout?order_id=${orderId}`);
     } catch (err) {
-      console.error("❌ Checkout failed:", err);
+      console.error("Checkout gagal:", err);
       setLoadingCheckout(false);
     }
   };
 
-  const total = items.reduce(
-    (sum: number, i: CartItem) => sum + i.price * i.quantity,
-    0
-  );
+  const total = items.reduce((sum: number, i: CartItem) => sum + i.price * i.quantity, 0);
 
   return (
-    <aside className="fixed right-0 top-0 w-[320px] h-full bg-white shadow-lg p-4 z-50">
+    <aside className="fixed right-0 top-0 w-[320px] h-full bg-white shadow-lg p-4 z-50 overflow-y-auto">
       <button
         onClick={() => setShowCart(false)}
         className="absolute top-2 right-2 text-gray-500 hover:text-black text-xl"
@@ -114,22 +87,23 @@ export default function CartSidebar() {
         <>
           <ul className="space-y-3">
             {items.map((item: CartItem) => (
-              <li key={item.variantId} className="flex gap-3 items-center">
+              <li key={item.variantId || item.productId} className="flex gap-3 items-center">
                 {item.image && (
                   <img
                     src={item.image}
                     className="w-12 h-12 object-cover rounded"
+                    alt={item.title}
                   />
                 )}
                 <div className="flex-1">
-                  <p className="font-semibold">{item.title}</p>
-                  <p className="text-sm text-gray-600">
+                  <p className="font-semibold text-sm">{item.title}</p>
+                  <p className="text-xs text-gray-600">
                     {item.quantity} × {formatRupiah(item.price)}
                   </p>
                 </div>
                 <button
-                  onClick={() => removeItem(item.variantId)}
-                  className="text-red-500 text-sm"
+                  onClick={() => removeItem(item.variantId || item.productId)}
+                  className="text-red-500 text-xs hover:underline"
                 >
                   Hapus
                 </button>
@@ -139,11 +113,12 @@ export default function CartSidebar() {
 
           <div className="mt-4 border-t pt-4">
             <p className="font-bold">Total: {formatRupiah(total)}</p>
+
             <button
               onClick={checkout}
-              disabled={loadingCheckout}
-              className={`mt-2 w-full py-2 rounded text-white ${
-                loadingCheckout
+              disabled={loadingCheckout || items.length === 0}
+              className={`mt-2 w-full py-2 rounded text-white transition-all ${
+                loadingCheckout || items.length === 0
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-black hover:opacity-90"
               }`}

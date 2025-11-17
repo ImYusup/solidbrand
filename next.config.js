@@ -21,6 +21,48 @@ const nextConfig = {
       },
     ],
   },
+
+  // === TAMBAHAN CORS UNTUK PAYPAL DI LOCALHOST ===
+  async headers() {
+    return [
+      {
+        // Terapkan ke semua route
+        source: "/:path*",
+        headers: [
+          {
+            key: "Access-Control-Allow-Origin",
+            value: "*", // Izinkan semua (untuk testing)
+          },
+          {
+            key: "Access-Control-Allow-Methods",
+            value: "GET, POST, PUT, DELETE, OPTIONS",
+          },
+          {
+            key: "Access-Control-Allow-Headers",
+            value: "Content-Type, Authorization",
+          },
+        ],
+      },
+      {
+        // Khusus untuk PayPal SDK (jika perlu)
+        source: "/api/paypal/:path*",
+        headers: [
+          { key: "Access-Control-Allow-Origin", value: "*" },
+        ],
+      },
+    ];
+  },
+
+  // === OPSIONAL: Izinkan localhost di dev mode ===
+  webpack: (config, { dev }) => {
+    if (dev) {
+      config.watchOptions = {
+        poll: 1000,
+        aggregateTimeout: 300,
+      };
+    }
+    return config;
+  },
 };
 
 module.exports = nextConfig;

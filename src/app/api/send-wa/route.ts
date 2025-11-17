@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
       email,
       address,
       status,
-      invoiceUrl, // ✅ rename biar konsisten
+      pdfUrl,
     } = data;
 
     const ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
@@ -31,41 +31,66 @@ export async function POST(req: NextRequest) {
 
     const url = `https://graph.facebook.com/v19.0/${PHONE_NUMBER_ID}/messages`;
 
-    // 🧾 Message to ADMIN
+    // DETEKSI LOKAL
+    const isLocal = buyerPhone.startsWith("628") || buyerPhone.startsWith("08");
+
+    // PESAN ADMIN (selalu bahasa Indonesia)
     const adminMessage = `
 ORDER ${orderId} (${orderDate}) — ORDER BARU MASUK!
 🧩 Produk: ${product}
 💰 Total: Rp ${total.toLocaleString("id-ID")}
-🚚 Ongkir: Rp ${ongkir} (${shipping})
+📦 Ongkir: ${shipping} (+Rp ${ongkir.toLocaleString("id-ID")})
 🏦 Bank: ${bank}
 👤 Customer: ${customer}
 📞 WA: ${wa}
 📧 Email: ${email}
 🏠 Alamat: ${address}
 📄 Status: ${status}
+📎 Invoice: ${pdfUrl}
+`.trim();
 
-📎 PDF Invoice: ${invoiceUrl}
+    // PESAN BUYER — OTOMATIS BAHASA
+    const buyerMessage = isLocal
+      ? `
+Order Berhasil! 
+Invoice otomatis terkirim ke WhatsApp Anda.
 
-✅ Invoice terkirim ke buyer & tersimpan di Google Drive.
-Data otomatis masuk Google Sheet "Transaksi".
-    `.trim();
-
-    // 🧾 Message to BUYER
-    const buyerMessage = `
-INVOICE ORDER ANDA
 Order ID: ${orderId}
+Tanggal: ${orderDate}
+Nama: ${customer}
+WhatsApp: ${wa}
 Produk: ${product}
+Ongkir: ${shipping} (+Rp ${ongkir.toLocaleString("id-ID")})
 Total: Rp ${total.toLocaleString("id-ID")}
-Ongkir: Rp ${ongkir} (${shipping})
-Bank Tujuan: ${bank}
+Alamat: ${address}
+Pembayaran: ${bank}
 Status: ${status}
 
-File PDF invoice Anda 👇
-${invoiceUrl}
+Silakan transfer & kirim bukti ke:
+wa.me/${adminPhone}
 
-Silakan kirim bukti transfer ke admin: wa.me/${adminPhone}
-Terima kasih & semoga sehat selalu 💪
-    `.trim();
+Terima kasih! 
+`.trim()
+      : `
+Order Successful! 
+Your invoice has been sent to your WhatsApp.
+
+Order ID: ${orderId}
+Date: ${orderDate}
+Name: ${customer}
+WhatsApp: ${wa}
+Product: ${product}
+Shipping: ${shipping} (+Rp ${ongkir.toLocaleString("id-ID")})
+Total: Rp ${total.toLocaleString("id-ID")}
+Address: ${address}
+Payment: ${bank}
+Status: ${status}
+
+Please transfer and send proof to:
+wa.me/${adminPhone}
+
+Thank you! 
+`.trim();
 
     const sendTextMessage = async (to: string, message: string) => {
       const payload = {
@@ -74,29 +99,55 @@ Terima kasih & semoga sehat selalu 💪
         type: "text",
         text: { body: message },
       };
-
       const res = await fetch(url, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${ACCESS_TOKEN}`,
-          "Content-Type": "application/json",
-        },
+        headers: { Authorization: `Bearer ${ACCESS_TOKEN}`, "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       const result = await res.json();
-      console.log("📩 WA Sent:", to, result);
+      console.log(`Text to ${to}:`, result);
       return result;
     };
 
-    const [adminRes, buyerRes] = await Promise.all([
+    const sendDocument = async (to: string, documentUrl: string, filename: string) => {
+      if (!documentUrl) {
+        console.log(`No PDF URL, skipping document for ${to}`);
+        return { skipped: true };
+      }
+      const payload = {
+        messaging_product: "whatsapp",
+        to,
+        type: "document",
+        document: { link: documentUrl, filename },
+      };
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${ACCESS_TOKEN}`, "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await res.json();
+      console.log(`PDF to ${to}:`, result);
+      return result;
+    };
+
+    const [adminRes, buyerTextRes, buyerDocRes] = await Promise.all([
       sendTextMessage(adminPhone, adminMessage),
       sendTextMessage(buyerPhone, buyerMessage),
+      sendDocument(buyerPhone, pdfUrl, `Invoice_${orderId}.pdf`),
     ]);
 
-    return NextResponse.json({ success: true, adminRes, buyerRes });
+    console.log("WA SENDING COMPLETE:", { adminRes, buyerTextRes, buyerDocRes });
+
+    return NextResponse.json({
+      success: true,
+      message: "WA sent to buyer & admin with PDF",
+      adminRes,
+      buyerTextRes,
+      buyerDocRes,
+      pdfUrl,
+    });
   } catch (err: any) {
-    console.error("❌ send-wa error:", err);
+    console.error("send-wa error:", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

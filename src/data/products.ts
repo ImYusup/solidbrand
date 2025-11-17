@@ -16,38 +16,43 @@ export type Product = {
 
 export const products: Product[] = [
   {
-    id: "cashflow-bot",
-    name: "WhatsApp Bot Cashflow Automation",
-    price: 150000,
-    discountPrice: 100000,
+    id: "solid-minislingbag",
+    name: "SOLID Mini Sling Bag – Tas Selempang Pria Wanita",
+    price: 100000,
+    discountPrice: 70000,
     currency: "IDR",
     description:
-      "Kontrol arus kas bisnis kamu dengan ringkasan real-time yang dikirim langsung ke WhatsApp setiap hari.",
+      "Tas selempang premium berdesain minimalis dengan material waterproof. Ringkas, ringan, dan cocok untuk aktivitas harian seperti kerja, kuliah, riding, hingga hangout.",
     features: [
-      "Ringkasan harian, mingguan, dan bulanan otomatis",
-      "Notifikasi arus kas real-time: surplus dan defisit",
-      "Mudah digunakan, cukup kirim pesan ke WhatsApp Bot",
+      "Material waterproof premium yang tahan cipratan air",
+      "Logo brand SOLID bordir rapi & eksklusif",
+      "Kantong utama luas dengan kompartemen tambahan",
+      "Resleting halus, kuat, dan tahan lama",
+      "Tali adjustable yang nyaman dipakai seharian",
     ],
     benefits: [
-      "Menghemat waktu dengan laporan keuangan otomatis",
-      "Langsung tahu kebocoran keuangan",
-      "Bikin keputusan bisnis lebih cepat dan berbasis data",
+      "Aman dari hujan ringan berkat bahan waterproof",
+      "Desain stylish cocok untuk berbagai outfit dan aktivitas",
+      "Muat banyak: dompet, HP, powerbank, charger, dan barang harian lainnya",
+      "Nyaman dipakai oleh pria maupun wanita",
     ],
     targetUsers: [
-      "UMKM yang butuh kontrol arus kas lebih baik",
-      "Pemilik bisnis yang ingin laporan instan di WhatsApp",
-      "Pengusaha yang lagi scale-up dan butuh monitoring keuangan cerdas",
+      "Rider atau anak motor yang butuh tas compact & aman",
+      "Pedagang atau pekerja yang ingin tas simple, kuat, dan elegan",
+      "Mahasiswa dengan mobilitas tinggi",
+      "Pengguna yang menyukai tas minimalis tapi terlihat premium",
     ],
     notes:
-      "Setelah pesanan selesai, masukkan nomor WhatsApp kamu di catatan order supaya akun bisa langsung diaktifkan.",
+      "Pastikan konfirmasi pembayaran diterima admin agar pesanan dapat segera diproses.",
     images: [
-      "/images/whatsapp/cashflow-jualan1.jpeg",
-      "/images/whatsapp/cashflow-jualan2.jpeg",
-      "/images/whatsapp/cashflow-jualan3.jpeg",
-      "/images/whatsapp/cashflow-jualan4.jpeg",
-      "/images/whatsapp/cashflow-jualan5.jpeg",
+      "/products/SlingBag1/SlingBag1.1.png",
+      "/products/SlingBag1/SlingBag1.2.png",
+      "/products/SlingBag1/SlingBag1.3.png",
+      "/products/SlingBag1/SlingBag1.4.png",
+      "/products/SlingBag1/SlingBag1.5.png"
     ],
-    videoUrl: "https://drive.google.com/file/d/1VVdGTkRf_YgwpnPCTG5eAlvKJz8aP8V9/preview",
+    videoUrl:
+      "https://drive.google.com/file/d/1rd5YvA3U9T_25K-ZpmV7I_hxjvTSnQhG/preview",
   },
   {
     id: "sales-bot",

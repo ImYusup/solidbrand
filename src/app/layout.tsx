@@ -6,7 +6,7 @@ import { Manrope } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
-import Script from "next/script"; // ✅ inject Midtrans Snap.js
+import Script from "next/script";
 import CartSidebar from "@/components/CartSidebar";
 
 // Fonts
@@ -116,12 +116,10 @@ export default function RootLayout({
         {/* ✅ Sidebar Cart selalu available */}
         <CartSidebar />
 
-        {/* ✅ Midtrans Snap.js always load Production */}
-        {/* <Script
-          src="https://app.midtrans.com/snap/snap.js"
-          data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
-          strategy="afterInteractive"
-        /> */}
+        <Script
+          src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&components=hosted-fields,buttons&currency=IDR&intent=capture&disable-funding=credit,card`}
+          strategy="beforeInteractive"
+        />
       </body>
     </html>
   );

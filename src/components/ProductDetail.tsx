@@ -3,6 +3,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useCart } from "@/lib/cart-store";
+import { useRouter } from "next/navigation";
 
 type MediaNode =
   | {
@@ -18,6 +19,7 @@ type MediaNode =
 
 export default function ProductDetail({ product }: { product: any }) {
   const { addItem, setShowCart } = useCart();
+  const router = useRouter();
 
   // 🔹 Build media list
   const mediaList: MediaNode[] = useMemo(() => {
@@ -70,6 +72,7 @@ export default function ProductDetail({ product }: { product: any }) {
   const handleAddToCart = () => {
     if (!fullVariantId) return;
     addItem({
+      productId: product.id,
       variantId: fullVariantId,
       title: product.name,
       price: product.discountPrice ?? product.price,
@@ -82,40 +85,10 @@ export default function ProductDetail({ product }: { product: any }) {
     setShowCart(true);
   };
 
-  // 🔹 Checkout Handler (QRIS)
-  const [loadingCheckout, setLoadingCheckout] = useState(false);
-  const [qrisData, setQrisData] = useState<string | null>(null);
-
-const handleCheckout = async () => {
-  if (loadingCheckout) return;
-  setLoadingCheckout(true);
-
-  try {
-    const payload = {
-      amount: (product.discountPrice ?? product.price).toFixed(2),
-    };
-
-    const response = await fetch("/api/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    const data = await response.json();
-
-    if (data.qr_string) {
-      setQrisData(data.qr_string);
-    } else {
-      console.error("QRIS gagal:", data);
-      alert("Gagal buat QRIS: " + (data.error || "Unknown error"));
-    }
-  } catch (err) {
-    console.error("Checkout error:", err);
-    alert("Koneksi gagal. Coba lagi.");
-  } finally {
-    setLoadingCheckout(false);
-  }
-};
+  // 🔹 BAYAR SEKARANG —> redirect ke halaman checkout
+  const handleCheckout = () => {
+    router.push(`/checkout?product=${product.id}&qty=${quantity}`);
+  };
 
   // 🔹 Rupiah Formatter
   const formatRupiah = (value: number) =>
@@ -264,34 +237,14 @@ const handleCheckout = async () => {
           >
             Add to cart
           </button>
+
+          {/* 🔹 Bayar Sekarang FIX */}
           <button
             onClick={handleCheckout}
-            disabled={loadingCheckout}
-            className={`w-full py-3 rounded-lg font-semibold text-white ${
-              loadingCheckout
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-green-500 hover:bg-green-600"
-            }`}
+            className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-semibold"
           >
-            {loadingCheckout ? "Memproses..." : "Bayar Sekarang"}
+            Bayar Sekarang
           </button>
-
-          {/* ✅ QRIS muncul setelah create */}
-          {qrisData && (
-            <div className="mt-6 border rounded-lg p-4 text-center bg-gray-50">
-              <h3 className="font-semibold mb-2">Scan QRIS untuk bayar</h3>
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(
-                  qrisData
-                )}`}
-                alt="QRIS Code"
-                className="mx-auto mb-2"
-              />
-              <p className="text-sm text-gray-500">
-                Gunakan aplikasi bank atau e-wallet yang mendukung QRIS
-              </p>
-            </div>
-          )}
 
           <button
             onClick={() => {
@@ -357,9 +310,9 @@ const handleCheckout = async () => {
           )}
         </div>
 
-        {/* 🔹 Footer Info */}
+        {/* Footer */}
         <div className="mt-8 text-center text-xs text-gray-400">
-          Memberdayakan bisnis dengan otomasi cerdas dan solusi digital.
+          SOLID menyediakan sling bag, backpack, travel bag, dan layanan custom termasuk jersey sports.
         </div>
       </div>
     </div>
