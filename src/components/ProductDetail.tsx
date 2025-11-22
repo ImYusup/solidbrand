@@ -3,45 +3,59 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useCart } from "@/lib/cart-store";
+import type { Product, ProductVariant } from "@/data/products";
 import { useRouter } from "next/navigation";
 
 type MediaNode =
   | {
-      __typename: "MediaImage";
-      id: string;
-      image: { url: string; altText?: string | null };
-    }
+    __typename: "MediaImage";
+    id: string;
+    image: { url: string; altText?: string | null };
+  }
   | {
-      __typename: "Video";
-      id: string;
-      sources: { url: string; mimeType?: string }[];
-    };
+    __typename: "Video";
+    id: string;
+    sources: { url: string; mimeType?: string }[];
+  };
 
-export default function ProductDetail({ product }: { product: any }) {
+export default function ProductDetail({ product }: { product: Product }) {
   const { addItem, setShowCart } = useCart();
   const router = useRouter();
 
+  // 🔹 State untuk variant yang dipilih
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+
   // 🔹 Build media list
   const mediaList: MediaNode[] = useMemo(() => {
-    const imgs =
-      product?.images?.map((url: string, i: number) => ({
+    // Jika variant dipilih → hanya tampil gambar variant
+    if (selectedVariant) {
+      return selectedVariant.images.map((url: string, i: number) => ({
+        __typename: "MediaImage" as const,
+        id: `variant-img-${i}`,
+        image: { url, altText: product.name },
+      }));
+    }
+
+    // Kalau belum pilih variant → tampilkan video (jika ada) + semua gambar produk
+    const baseImages =
+      product.images?.map((url: string, i: number) => ({
         __typename: "MediaImage" as const,
         id: `img-${i}`,
         image: { url, altText: product.name },
       })) || [];
 
-    const vids = product?.videoUrl
+    const baseVideo = product.videoUrl
       ? [
-          {
-            __typename: "Video" as const,
-            id: "vid-1",
-            sources: [{ url: product.videoUrl, mimeType: "video/mp4" }],
-          },
-        ]
+        {
+          __typename: "Video" as const,
+          id: "video-product",
+          sources: [{ url: product.videoUrl, mimeType: "video/mp4" }],
+        },
+      ]
       : [];
 
-    return vids.length > 0 ? [...vids, ...imgs] : imgs;
-  }, [product]);
+    return [...baseVideo, ...baseImages];
+  }, [product, selectedVariant]);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
   useEffect(() => {
@@ -66,7 +80,7 @@ export default function ProductDetail({ product }: { product: any }) {
   }, [selectedIndex]);
 
   const [quantity, setQuantity] = useState(1);
-  const fullVariantId = product?.id;
+  const fullVariantId = selectedVariant?.id || product.id;
 
   // 🔹 Add to Cart
   const handleAddToCart = () => {
@@ -105,51 +119,90 @@ export default function ProductDetail({ product }: { product: any }) {
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
       {/* Left: media */}
-      <div>
-        {mediaList.length === 0 ? (
-          <div className="w-full h-[240px] md:h-[420px] bg-gray-100 flex items-center justify-center rounded-lg">
-            <span className="text-gray-500 text-sm">No media available</span>
-          </div>
-        ) : mediaList[selectedIndex].__typename === "Video" ? (
-          <>
-            {mediaList[selectedIndex].sources[0].url.includes("youtube.com") ||
-            mediaList[selectedIndex].sources[0].url.includes("youtu.be") ||
-            mediaList[selectedIndex].sources[0].url.includes(
-              "drive.google.com"
-            ) ? (
-              <div className="w-full bg-black rounded-lg shadow-lg overflow-hidden flex items-center justify-center">
-                <iframe
-                  src={mediaList[selectedIndex].sources[0].url}
-                  className="w-full aspect-[9/16] md:aspect-[16/9] object-contain"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
-            ) : (
-              <div className="w-full bg-black rounded-lg shadow-lg overflow-hidden flex items-center justify-center">
-                <video
-                  controls
-                  className="w-full aspect-[9/16] md:aspect-[16/9] object-contain"
+      <div className="w-full max-w-[520px] mx-auto">
+
+        {/* 🔹 Wrapper relative khusus media */}
+        <div className="relative">
+          {/* 🔹 Main Media Display (Image / Video) */}
+          {mediaList.length === 0 ? (
+            <div className="w-full h-[240px] md:h-[420px] bg-gray-100 flex items-center justify-center rounded-lg">
+              <span className="text-gray-500 text-sm">No media available</span>
+            </div>
+          ) : mediaList[selectedIndex].__typename === "Video" ? (
+            <>
+              {mediaList[selectedIndex].sources[0].url.includes("drive.google.com") ? (
+                <div
+                  className="w-full bg-black rounded-lg shadow-lg overflow-hidden flex items-center justify-center"
+                  style={{ aspectRatio: "3 / 4" }}
                 >
-                  <source
+                  <iframe
                     src={mediaList[selectedIndex].sources[0].url}
-                    type={
-                      mediaList[selectedIndex].sources[0].mimeType ||
-                      "video/mp4"
-                    }
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
                   />
-                  Your browser does not support the video tag.
-                </video>
-              </div>
-            )}
-          </>
-        ) : (
-          <img
-            src={mediaList[selectedIndex].image.url}
-            alt={mediaList[selectedIndex].image.altText || product.name}
-            className="w-full max-h-[280px] md:max-h-[480px] object-contain rounded-lg shadow-lg"
-          />
-        )}
+                </div>
+              ) : mediaList[selectedIndex].sources[0].url.includes("youtube.com") ||
+                mediaList[selectedIndex].sources[0].url.includes("youtu.be") ? (
+                // 🟢 YouTube tetap pakai iframe (aman)
+                <div
+                  className="w-full bg-black rounded-lg shadow-lg overflow-hidden flex items-center justify-center"
+                  style={{ aspectRatio: "3 / 4" }}
+                >
+                  <iframe
+                    src={mediaList[selectedIndex].sources[0].url}
+                    className="w-full h-full object-cover"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              ) : (
+                <div className="w-full bg-black rounded-lg shadow-lg overflow-hidden flex items-center justify-center">
+                  <video
+                    controls
+                    className="w-full aspect-[9/16] md:aspect-[16/9] object-contain"
+                  >
+                    <source
+                      src={mediaList[selectedIndex].sources[0].url}
+                      type={mediaList[selectedIndex].sources[0].mimeType || "video/mp4"}
+                    />
+                  </video>
+                </div>
+              )}
+            </>
+          ) : (
+            <div
+              className="w-full bg-[#f9f9f9] rounded-lg shadow-lg overflow-hidden flex items-center justify-center"
+              style={{ aspectRatio: "3 / 4" }}
+            >
+              <img
+                src={mediaList[selectedIndex].image.url}
+                alt={mediaList[selectedIndex].image.altText || product.name}
+                className="w-full h-full object-contain"
+              />
+            </div>
+          )}
+
+          {/* 🔹 Left Arrow */}
+          {selectedIndex > 0 && (
+            <button
+              onClick={() => setSelectedIndex((prev) => prev - 1)}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-700 p-2 rounded-full shadow"
+            >
+              ◀
+            </button>
+          )}
+
+          {/* 🔹 Right Arrow */}
+          {selectedIndex < mediaList.length - 1 && (
+            <button
+              onClick={() => setSelectedIndex((prev) => prev + 1)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-700 p-2 rounded-full shadow"
+            >
+              ▶
+            </button>
+          )}
+        </div>
 
         {/* 🔹 Thumbnails */}
         <div
@@ -160,9 +213,8 @@ export default function ProductDetail({ product }: { product: any }) {
             <button
               key={m.id}
               onClick={() => setSelectedIndex(i)}
-              className={`flex-shrink-0 w-16 h-12 md:w-24 md:h-16 rounded overflow-hidden border ${
-                i === selectedIndex ? "border-blue-500" : "border-gray-200"
-              }`}
+              className={`flex-shrink-0 w-16 h-12 md:w-24 md:h-16 rounded overflow-hidden border ${i === selectedIndex ? "border-blue-500" : "border-gray-200"
+                }`}
             >
               {m.__typename === "Video" ? (
                 <div className="relative w-full h-full bg-black flex items-center justify-center">
@@ -203,6 +255,32 @@ export default function ProductDetail({ product }: { product: any }) {
             {formatRupiah(product.discountPrice ?? product.price)}
           </p>
         </div>
+
+        {/* 🔹 Variant Selector */}
+        {product.variants && product.variants.length > 0 && (
+          <div className="mb-4">
+            <h3 className="text-sm font-semibold mb-2">Colors:</h3>
+            <div className="flex gap-2">
+
+              {product.variants?.map((variant) => (
+                <button
+                  key={variant.id}
+                  onClick={() => setSelectedVariant(variant)}
+                  className={`w-10 h-10 rounded-full border-2 flex-shrink-0
+                  ${selectedVariant?.id === variant.id ? "border-blue-600" : "border-gray-300"}`}
+                  style={{
+                    backgroundColor: variant.colorCode || "#ddd",
+                  }}
+                  title={variant.color}
+                />
+              ))}
+
+            </div>
+            <p className="text-sm mt-1 text-gray-600">
+              {selectedVariant?.color || "Colors"}
+            </p>
+          </div>
+        )}
 
         {/* Quantity */}
         <div className="flex items-center gap-3 mb-4">
@@ -312,9 +390,9 @@ export default function ProductDetail({ product }: { product: any }) {
 
         {/* Footer */}
         <div className="mt-8 text-center text-xs text-gray-400">
-          SOLID menyediakan sling bag, backpack, travel bag, dan layanan custom termasuk jersey sports.
+          SOLID menyediakan Sling Bag, Backpack, Travel Bag, dan custom pembuatan Jersey Sports.
         </div>
       </div>
-    </div>
+    </div >
   );
 }

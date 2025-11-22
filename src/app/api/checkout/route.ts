@@ -21,22 +21,32 @@ export async function POST(req: NextRequest) {
     const minutes = String(now.getMinutes()).padStart(2, "0");
     const seconds = String(now.getSeconds()).padStart(2, "0");
 
-    const orderId = `ORD-${day}${month}${year}-${hours}${minutes}${seconds}`; 
+    const orderId = `ORD-${day}${month}${year}-${hours}${minutes}${seconds}`;
     const enrichedItems = items.map((item: any) => {
       const product = products.find(p => p.id === item.productId);
+      const variant = product?.variants?.find(v => v.id === item.variantId);
+
       return {
         productId: item.productId,
+        variantId: item.variantId || "",
         quantity: item.quantity,
         title: product?.name || "Unknown Product",
         price: product?.discountPrice || product?.price || 0,
-        image: product?.images?.[0] || undefined, // ← FIX: optional chain + fallback
+        image: variant?.images?.[0] || product?.images?.[0] || undefined,
+        color: variant?.color || "",
+        colorCode: variant?.colorCode || "",
       };
     });
 
     const subtotal = enrichedItems.reduce((sum: number, i: any) => sum + i.price * i.quantity, 0);
     orders[orderId] = { items: enrichedItems, subtotal };
 
-    return NextResponse.json({ success: true, order_id: orderId });
+    return NextResponse.json({
+      success: true,
+      order_id: orderId,
+      items: enrichedItems,
+      subtotal,
+    });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }

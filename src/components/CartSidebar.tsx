@@ -37,13 +37,16 @@ export default function CartSidebar() {
       // ENRICH ITEMS DENGAN DATA PRODUK
       const enrichedItems = items.map((item: CartItem) => {
         const product = products.find(p => p.id === item.productId);
+        const variant = product?.variants?.find(v => v.id === item.variantId);
         return {
           productId: item.productId,
           variantId: item.variantId || "",
           title: product?.name || item.title,
+          color: variant?.color || "",   // ⬅ Tambah warna
+          colorCode: variant?.colorCode || "",
           price: product?.discountPrice || product?.price || item.price,
           quantity: item.quantity,
-          image: product?.images?.[0] || item.image,
+          image: variant?.images?.[0] || product?.images?.[0] || item.image, // ⬅ Prioritaskan varian
         };
       });
 
@@ -117,11 +120,10 @@ export default function CartSidebar() {
             <button
               onClick={checkout}
               disabled={loadingCheckout || items.length === 0}
-              className={`mt-2 w-full py-2 rounded text-white transition-all ${
-                loadingCheckout || items.length === 0
+              className={`mt-2 w-full py-2 rounded text-white transition-all ${loadingCheckout || items.length === 0
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-black hover:opacity-90"
-              }`}
+                }`}
             >
               {loadingCheckout ? "Memproses..." : "Checkout"}
             </button>

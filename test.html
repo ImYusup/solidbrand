@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Test PayPal Sandbox SolidBrand</title>
+</head>
+<body style="font-family: Arial; padding: 20px;">
+
+  <h3>Test Pembayaran PayPal Sandbox - WebBotPro Checkout</h3>
+  <p>Total: $10.00 USD (Rp 160.000 approx)</p>
+  <div id="paypal-button-container"></div>
+
+  <!-- Ganti dengan Client ID sandbox lu -->
+  <script src="https://www.paypal.com/sdk/js?client-id=Ad4xKAnrX9dspb4dZyaVtQZ9EvCQL2rFEecPwpBZRkvQsfxamts74TPo2aCyWgcEqrx2azlTI0LHFZrx&currency=USD&intent=capture"></script>
+
+  <script>
+    paypal.Buttons({
+      style: { layout: 'vertical', color: 'gold', shape: 'rect', label: 'paypal' },
+      
+      createOrder: function(data, actions) {
+        return actions.order.create({
+          purchase_units: [{
+            amount: {
+              value: '10.00',  // Ubah jumlah test sesuka hati (misal 5.00 buat Rp 80.000)
+              currency_code: 'USD'
+            },
+            description: "Test Order #001"
+          }]
+        });
+      },
+
+      onApprove: function(data, actions) {
+        return actions.order.capture().then(function(details) {
+          alert('✅ Pembayaran sukses di Sandbox!\nPayer: ' + details.payer.name.given_name + '\nID Transaksi: ' + details.id + '\nCek dashboard PayPal sandbox!');
+          console.log('Full details:', details);
+          // Di project lu, ini bagian setPaypalPaid(true)
+        });
+      },
+
+      onError: function(err) {
+        console.error('❌ PayPal error:', err);
+        alert('Error: ' + (err.message || 'Coba refresh halaman dan test lagi. Cek console buat detail.'));
+      }
+    }).render('#paypal-button-container');
+  </script>
+
+  <hr>
+  <h4>Debug Info:</h4>
+  <p>- Kalau tombol gak muncul: Cek Client ID di atas bener? Atau network error?</p>
+  <p>- Console error unload? Ignore, normal di sandbox.</p>
+  <p>- Setelah bayar: Buka <a href="https://www.sandbox.paypal.com" target="_blank">sandbox.paypal.com</a> → login buyer → cek Activity.</p>
+
+</body>
+</html>

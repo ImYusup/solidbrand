@@ -1,4 +1,12 @@
 // src/data/products.ts
+export type ProductVariant = {
+  id: string;
+  color: string;
+  colorCode?: string;
+  images: string[];
+  videoUrl?: string;
+};
+
 export type Product = {
   id: string;
   name: string;
@@ -12,6 +20,7 @@ export type Product = {
   notes?: string;
   images?: string[];
   videoUrl?: string;
+  variants?: ProductVariant[];
 };
 
 export const products: Product[] = [
@@ -45,197 +54,160 @@ export const products: Product[] = [
     notes:
       "Pastikan konfirmasi pembayaran diterima admin agar pesanan dapat segera diproses.",
     images: [
-      "/products/SlingBag1/SlingBag1.1.png",
-      "/products/SlingBag1/SlingBag1.2.png",
-      "/products/SlingBag1/SlingBag1.3.png",
-      "/products/SlingBag1/SlingBag1.4.png",
-      "/products/SlingBag1/SlingBag1.5.png"
+      "/products/minislingbag/minislingbag1.png",
+      "/products/minislingbag/minislingbag2.png",
+      "/products/minislingbag/minislingbag3.png",
+      "/products/minislingbag/minislingbag4.png",
+      "/products/minislingbag/minislingbag5.png"
     ],
     videoUrl:
       "https://drive.google.com/file/d/1rd5YvA3U9T_25K-ZpmV7I_hxjvTSnQhG/preview",
   },
   {
-    id: "sales-bot",
-    name: "WhatsApp Bot Sales Automation",
-    price: 450000,
-    discountPrice: 300000, // opsional kalau mau kasih diskon
+    id: "urban-slingbag",
+    name: "SOLID Urban Sling Bag – Tas Selempang Pria Wanita",
+    price: 200000,
+    discountPrice: 150000,
     currency: "IDR",
     description:
-      "Bot WhatsApp untuk otomasi penjualan, katalog, dan notifikasi order. Bikin jualan makin gampang dan cepat.",
+      "Tas selempang premium berdesain urban minimalis dengan material waterproof. Ringkas, stylish, dan cocok untuk aktivitas harian seperti kerja, kuliah, riding, traveling, hingga hangout.",
     features: [
-      "Katalog produk otomatis via WhatsApp",
-      "Notifikasi order langsung ke admin",
-      "Auto-reply untuk pertanyaan produk",
-      "Integrasi dengan sistem pembayaran sendiri",
+      "Material premium waterproof tahan cipratan air dan debu",
+      "Logo SOLID bordir eksklusif & elegan menambah kesan premium",
+      "Kompartemen utama luas dengan organizer multifungsi",
+      "Resleting halus, kuat, dan awet dengan finishing rapi",
+      "Tali selempang adjustable & anti-slip, nyaman untuk pemakaian lama",
+      "Dilengkapi lapisan busa lembut untuk perlindungan ekstra barang bawaan",
     ],
     benefits: [
-      "Menghemat waktu untuk balas chat pelanggan",
-      "Meningkatkan konversi penjualan",
-      "Bikin pelanggan lebih nyaman dengan respon instan",
-      "Mudah dipakai tanpa perlu teknis ribet",
+      "Aman dari hujan ringan dan lingkungan berdebu",
+      "Praktis untuk membawa barang esensial tanpa terasa bulky",
+      "Desain urban modern mudah dipadukan dengan berbagai outfit",
+      "Ringan, tetap stylish, dan cocok untuk aktivitas kerja, kuliah, jalan, atau riding",
+      "Nyaman dipakai pria maupun wanita (unisex & trendy)",
     ],
     targetUsers: [
-      "Online shop yang ingin respon cepat ke pelanggan",
-      "UMKM yang jualan via WhatsApp",
-      "Bisnis yang butuh sistem order otomatis",
-      "Dropshipper dan reseller yang butuh efisiensi",
+      "Pengguna aktif yang butuh tas simple, aman, tapi tetap premium",
+      "Karyawan, mahasiswa, atau pekerja lapangan dengan mobilitas tinggi",
+      "Pengendara motor yang butuh tas ringkas, kuat, dan aman dari hujan",
+      "Traveller, konten kreator, atau pedagang yang membawa gadget & dompet harian",
+      "Pengguna yang ingin tampil minimalis namun terlihat profesional & elegan",
     ],
     notes:
-      "Setelah pesanan selesai, masukkan nomor WhatsApp kamu di catatan order supaya bot bisa langsung diaktifkan.",
+      "Pastikan konfirmasi pembayaran diterima admin agar pesanan dapat segera diproses.",
     images: [
-      "/images/whatsapp/wa-jualan1.jpeg",
-      "/images/whatsapp/wa-jualan2.jpeg",
-      "/images/whatsapp/wa-jualan3.jpeg",
-      "/images/whatsapp/wa-jualan4.jpeg",
+      "/products/urbanslingbag/urbanslingbag1.png",
+      "/products/urbanslingbag/urbanslingbag2.png",
+      "/products/urbanslingbag/urbanslingbag3.png",
+      "/products/urbanslingbag/urbanslingbag4.png",
+      "/products/urbanslingbag/urbanslingbag5.png",
     ],
-    videoUrl: "https://drive.google.com/file/d/1Qf2VzUr_BUsGWgLlu5f3F3wscX0ZoaSC/preview",
+    videoUrl: "https://drive.google.com/file/d/1AGI0rl2g3TsMXqJgF3ZgkFfQx5iAESRx/preview",
   },
   {
-    id: "company-profile-website",
-    name: "Company Profile Website",
-    price: 1000000,
-    discountPrice: 700000,
+    id: "titan-slingbag",
+    name: "SOLID Titan Sling Bag – Tas Selempang Pria Wanita",
+    price: 250000,
+    discountPrice: 200000,
     currency: "IDR",
     description:
-      "Website profesional sederhana untuk UMKM & company profile bisnis.",
+      "Tas selempang premium dengan desain modern dan material waterproof. Ringkas, kuat, dan nyaman untuk aktivitas harian, kerja, atau traveling.",
     features: [
-      "Desain modern & responsif",
-      "Mudah dikelola tanpa perlu coding",
-      "SEO basic untuk tampil di Google",
-      "Halaman About, Layanan, Kontak, dan lainnya",
+      "Material waterproof dan anti-gores premium",
+      "Kompartemen utama luas dengan beberapa slot penyimpanan",
+      "Resleting kuat dan halus kualitas tinggi",
+      "Tali adjustable ergonomis dan breathable",
+      "Logo SOLID eksklusif dengan finishing elegan",
     ],
     benefits: [
-      "Meningkatkan kredibilitas bisnis",
-      "Tampil profesional di mata pelanggan",
-      "Bisa diakses 24/7 dari mana saja",
-      "Cocok untuk UMKM yang ingin go digital",
+      "Aman dari hujan ringan dan percikan air",
+      "Muat tablet, dompet, HP, charger, dan aksesoris harian",
+      "Nyaman dipakai seharian tanpa pegal",
+      "Tampilan stylish dan profesional di berbagai outfit",
+      "Cocok untuk bepergian, kerja, atau aktivitas outdoor",
     ],
     targetUsers: [
-      "UMKM yang butuh website company profile cepat",
-      "Startup yang ingin punya landing page profesional",
-      "Bisnis lokal yang ingin tampil di internet",
+      "Profesional dan pekerja kantoran yang butuh tas stylish dan fungsional",
+      "Traveler atau commuter dengan mobilitas tinggi",
+      "Pengguna yang ingin sling bag modern, kuat, dan elegan",
+      "Penggemar tas minimalis yang terlihat premium",
     ],
     notes:
-      "Setelah pesanan selesai, tim kami akan menghubungi kamu untuk mengumpulkan konten (logo, foto, teks) sebelum website di-deploy.",
+      "Pastikan konfirmasi pembayaran diterima admin agar pesanan dapat segera diproses.",
     images: [
-      "/images/website/wb-webbotpro1.jpg",
-      "/images/website/wb-webbotpro2.jpg",
-      "/images/website/wb-webbotpro3.jpg",
-      "/images/website/wb-webbotpro4.jpg",
+      "/products/titanslingbag/titanslingbag1.png",
+      "/products/titanslingbag/titanslingbag2.png",
+      "/products/titanslingbag/titanslingbag3.png",
+      "/products/titanslingbag/titanslingbag4.png",
+      "/products/titanslingbag/titanslingbag5.png",
+      "/products/titanslingbag/titanslingbag6.png",
     ],
-    videoUrl: "https://drive.google.com/file/d/10qTOrzS0lAFNmHcc85bGcsSXGMqptIii/preview",
+    videoUrl: "https://drive.google.com/file/d/1s4Y_vO2ou0C_xYkM6E_Xl8l_aJn57sUT/preview",
   },
   {
-    id: "ecommerce-website",
-    name: "E-Commerce Website",
-    price: 7500000,
-    discountPrice: 5000000,
+    id: "backpacker-travel",
+    name: "SOLID Backpacker Travel Bag – Tas Travel Pria Wanita",
+    price: 350000,
+    discountPrice: 250000,
     currency: "IDR",
     description:
-      "Website toko online lengkap dengan payment gateway & integrasi Instagram Shop. Cocok buat UMKM dan bisnis yang serius jualan online.",
+      "Tas travel premium dengan desain tangguh, kapasitas besar, dan nyaman dipakai untuk perjalanan jauh maupun aktivitas harian.",
     features: [
-      "Desain modern & mobile friendly",
-      "Integrasi payment gateway",
-      "Manajemen produk & stok",
-      "Integrasi Instagram Shop",
-      "Fitur diskon & voucher",
-      "Laporan penjualan otomatis",
+      "Material tebal dan waterproof, tahan cuaca dan debu",
+      "Kapasitas besar dengan banyak kompartemen",
+      "Resleting YKK kuat dan smooth",
+      "Padding punggung empuk dan breathable",
+      "Tali adjustable dan ergonomis",
+      "Cocok untuk travel, hiking, dan harian"
     ],
     benefits: [
-      "Mempermudah pelanggan belanja 24/7",
-      "Meningkatkan kepercayaan dan profesionalitas toko online",
-      "Otomatisasi penjualan & pembayaran",
-      "Mudah kelola produk tanpa coding",
+      "Barang aman dan rapi berkat banyaknya ruang penyimpanan",
+      "Nyaman dipakai lama tanpa pegal",
+      "Tahan hujan ringan dan kondisi outdoor",
+      "Tampil stylish dan tetap fungsional",
+      "Cocok untuk segala aktivitas perjalanan"
     ],
     targetUsers: [
-      "UMKM yang ingin punya toko online sendiri",
-      "Pebisnis yang jualan di Instagram/TikTok tapi mau punya website resmi",
-      "Startup dan brand lokal yang butuh sistem e-commerce terintegrasi",
+      "Traveler dan backpacker aktif",
+      "Mahasiswa dengan banyak barang",
+      "Pekerja lapangan dan outdoor",
+      "Pengguna yang butuh tas besar, kuat, dan stylish"
     ],
     notes:
-      "Setelah pesanan selesai, tim kami akan menghubungi kamu untuk mengumpulkan data produk, logo, dan kebutuhan integrasi sebelum website di-deploy.",
-    images: [
-      "/images/website/bg-webbotpro1.jpg",
-      "/images/website/bg-webbotpro2.jpg",
-      "/images/website/bg-webbotpro3.jpg",
-      "/images/website/bg-webbotpro4.jpg",
-      "/images/website/bg-webbotpro5.jpg",
-    ],
-    videoUrl: "https://drive.google.com/file/d/1rThsHOEJlCe4SAQbW2U242Urq8lT9pSA/preview",
-  },
-  {
-    id: "powerbi-dashboard",
-    name: "Power BI Dashboard & BI Solutions",
-    price: 1500000,
-    discountPrice: 1000000,
-    currency: "IDR",
-    description:
-      "Dashboard interaktif untuk analisis data, laporan bisnis, dan decision support. Bikin keputusan bisnis lebih cepat dengan visualisasi data yang powerful.",
-    features: [
-      "Dashboard interaktif dengan filter & drill-down",
-      "Integrasi ke Google Sheets, Excel, atau database",
-      "Laporan otomatis real-time",
-      "Visualisasi data yang mudah dipahami",
-      "Bisa diakses via web & mobile",
-    ],
-    benefits: [
-      "Meningkatkan kecepatan pengambilan keputusan",
-      "Mempermudah monitoring KPI bisnis",
-      "Mengurangi human error dalam laporan manual",
-      "Bikin data lebih transparan & terstruktur",
-    ],
-    targetUsers: [
-      "Pemilik bisnis yang butuh laporan interaktif",
-      "Tim manajemen yang ingin KPI selalu up-to-date",
-      "Perusahaan yang pakai Google Sheets/Excel tapi ingin data lebih rapi",
-      "Startup yang mulai data-driven decision making",
-    ],
-    notes:
-      "Setelah pesanan selesai, kamu bisa share file/data ke tim kami untuk setup dashboard sesuai kebutuhan bisnis.",
-    images: [
-      "/images/powerbi/powerbi1.png",
-      "/images/powerbi/powerbi2.png",
-      "/images/powerbi/powerbi3.png",
-    ],
-    videoUrl: "https://drive.google.com/file/d/1Jrsprlu-2eFY-4o0x57vqdK_QplVbioU/preview",
-  },
-  {
-    id: "business-website",
-    name: "Business Website (SMB)",
-    price: 2300000,
-    discountPrice: 1500000,
-    currency: "IDR",
-    description:
-      "Website bisnis modern dengan fitur pembayaran online.",
-    features: [
-      "Website modern responsif (desktop & mobile)",
-      "Integrasi payment Indonesia",
-      "Sudah termasuk domain + hosting gratis langsung aktif",
-      "Cocok untuk Company Profile, toko kecil, hingga brand UMKM",
-    ],
-    benefits: [
-      "Tampilan bisnis lebih profesional",
-      "Brand lebih dipercaya pelanggan",
-      "Mudah ditemukan di Google",
-      "Cocok untuk UMKM, personal branding, dan startup",
-    ],
-    targetUsers: [
-      "UMKM yang butuh identitas digital",
-      "Perusahaan kecil & menengah",
-      "Personal branding / freelancer",
-      "Startup yang ingin tampil profesional",
-    ],
-    notes:
-      "Setelah order segera lakukan konsultasi untuk menentukan domain. Estimasi selesai 1–2 hari kerja.",
-    images: [
-      "/images/website/smb-webbotpro1.jpeg",
-      "/images/website/smb-webbotpro2.jpeg",
-      "/images/website/smb-webbotpro3.jpeg",
-      "/images/website/smb-webbotpro4.jpeg",
-      "/images/website/smb-webbotpro5.jpeg",
-      "/images/website/smb-webbotpro6.jpeg",
-    ],
+      "Pastikan konfirmasi pembayaran diterima admin agar pesanan dapat segera diproses.",
+
     videoUrl:
-      "https://drive.google.com/file/d/1R5hFxl36tW65e2FDfIPi3Et3INkrtGpq/preview",
+      "https://drive.google.com/file/d/1wVvf17zupiaeURlX1ij5enh3wczpvigp/preview",
+    images: [
+      "/products/travelbag/tastravel1-hj.png",
+      "/products/travelbag/tastravel2-hj.png",
+      "/products/travelbag/tastravel3-hj.png",
+      "/products/travelbag/tastravel1-ht.png",
+      "/products/travelbag/tastravel2-ht.png",
+      "/products/travelbag/tastravel3-ht.png",
+    ],
+    variants: [
+       {
+        id: "backpacker-travel-black",
+        color: "Hitam",
+        colorCode: "#1c1c1c",
+        images: [
+          "/products/travelbag/tastravel1-ht.png",
+          "/products/travelbag/tastravel2-ht.png",
+          "/products/travelbag/tastravel3-ht.png",
+        ],
+      },
+      {
+        id: "backpacker-travel-green",
+        color: "Hijau",
+        colorCode: "#4b5320",
+        images: [
+          "/products/travelbag/tastravel1-hj.png",
+          "/products/travelbag/tastravel2-hj.png",
+          "/products/travelbag/tastravel3-hj.png",
+        ],
+      },
+    ],
   },
+
 ];

@@ -11,35 +11,35 @@ export default function InvoiceTemplate({ order }: InvoiceProps) {
 
   const t = isLocal
     ? {
-        invoice: "INVOICE",
-        orderId: "Order ID:",
-        date: "Tanggal:",
-        name: "Nama:",
-        phone: "HP:",
-        item: "Item",
-        qty: "Jumlah:",
-        price: "Harga",
-        shipping: (m: string) => `Ongkir (${m})`,
-        total: "TOTAL",
-        transfer: (b: any) => (b ? `${b.bank} - ${b.account} a.n. ${b.name}` : "QRIS/VA"),
-        address: "Alamat:",
-        status: "Status:",
-      }
+      invoice: "INVOICE",
+      orderId: "Order ID:",
+      date: "Tanggal:",
+      name: "Nama:",
+      phone: "HP:",
+      item: "Item",
+      qty: "Jumlah:",
+      price: "Harga",
+      shipping: (m: string) => `Ongkir (${m})`,
+      total: "TOTAL",
+      transfer: (b: any) => (b ? `${b.bank} - ${b.account} a.n. ${b.name}` : "QRIS/VA"),
+      address: "Alamat:",
+      status: "Status:",
+    }
     : {
-        invoice: "INVOICE",
-        orderId: "Order ID:",
-        date: "Date:",
-        name: "Name:",
-        phone: "Phone:",
-        item: "Item",
-        qty: "Qty:",
-        price: "Price",
-        shipping: (m: string) => `Shipping (${m})`,
-        total: "TOTAL",
-        transfer: (b: any) => (b ? `${b.bank} - ${b.account} under ${b.name}` : "International Transfer / QR"),
-        address: "Address:",
-        status: "Status:",
-      };
+      invoice: "INVOICE",
+      orderId: "Order ID:",
+      date: "Date:",
+      name: "Name:",
+      phone: "Phone:",
+      item: "Item",
+      qty: "Qty:",
+      price: "Price",
+      shipping: (m: string) => `Shipping (${m})`,
+      total: "TOTAL",
+      transfer: (b: any) => (b ? `${b.bank} - ${b.account} under ${b.name}` : "International Transfer / QR"),
+      address: "Address:",
+      status: "Status:",
+    };
 
   const fullName = `${order.billing.firstName || ""} ${order.billing.lastName || ""}`.trim();
   const address = `${order.billing.street || ""}${order.billing.city ? ", " + order.billing.city : ""}${order.billing.apartment ? ", " + order.billing.apartment : ""}`;
@@ -139,7 +139,19 @@ export default function InvoiceTemplate({ order }: InvoiceProps) {
           {items.map((item: any, i: number) => (
             <tr key={i}>
               <td style={{ padding: "8px 12px", border: "1px solid #e5e7eb", wordBreak: "break-word" }}>
-                {item.title}
+                <div style={{ fontWeight: 600 }}>{item.title}</div>
+                {/* 👇 Tampilkan warna jika ada */}
+                {item.color && (
+                  <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>
+                    Color: {item.color} {item.colorCode && `(${item.colorCode})`}
+                  </div>
+                )}
+                {/* 👇 Tampilkan Variant ID optional */}
+                {item.variantId && (
+                  <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 2 }}>
+                    Variant ID: {item.variantId}
+                  </div>
+                )}
               </td>
               <td style={{ textAlign: "center", padding: "8px 12px", border: "1px solid #e5e7eb" }}>
                 {item.quantity}

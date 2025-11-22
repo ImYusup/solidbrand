@@ -41,6 +41,27 @@ export default function OrderComplete() {
   const productList = items.map((i: any) => `${i.title} (x${i.quantity})`).join(", ");
   const productForWA = items.map((i: any) => `${i.title} x${i.quantity}`).join("\n");
 
+  // === PAYMENT LOGIC – Support PayPal & Crypto ===
+  const paymentDisplay = order?.paymentMethod === "PayPal"
+    ? `PayPal${order.paypalTransactionId ? ` - ${order.paypalTransactionId}` : ""}`
+    : order?.paymentMethod === "Crypto"
+      ? `Crypto USDT${order.cryptoTxId ? ` - ${order.cryptoTxId.slice(0, 12)}...` : ""}`
+      : order?.bank
+        ? `${order.bank.bank} - ${order.bank.account} a.n. ${order.bank.name}`
+        : order?.payment === "qris"
+          ? "QRIS"
+          : "Virtual Account / Others";
+
+  const paymentForSheet = order?.paymentMethod === "PayPal"
+    ? `PayPal - ${order.paypalTransactionId || "N/A"}`
+    : order?.paymentMethod === "Crypto"
+      ? `Crypto USDT - ${order.cryptoTxId || "Pending"}`
+      : order?.bank
+        ? `${order.bank.bank} - ${order.bank.account}`
+        : order?.payment === "qris"
+          ? "QRIS"
+          : "VA";
+
   useEffect(() => {
     if (!order || !invoiceRef.current) return;
 
@@ -57,14 +78,6 @@ export default function OrderComplete() {
         const { invoiceUrl } = await uploadRes.json();
         if (!invoiceUrl) throw new Error("Upload gagal");
 
-        const paymentDisplay = order.bank
-          ? `${order.bank.bank} - ${order.bank.account} a.n. ${order.bank.name}`
-          : order.payment === "qris" ? "QRIS" : "Virtual Account";
-
-        const paymentForSheet = order.bank
-          ? `${order.bank.bank} - ${order.bank.account}`
-          : order.payment === "qris" ? "QRIS" : "VA";
-
         const buyerPhone = normalizePhone(order.billing.phone);
 
         await fetch("/api/send-wa", {
@@ -78,13 +91,13 @@ export default function OrderComplete() {
             product: productForWA,
             total: order.total,
             quantity: totalQty,
-            ongkir: order.shipping?.cost || 0,
-            shipping: order.shipping?.method || "-",
-            bank: paymentDisplay,
+            ongkir: 0,
+            shipping: "International",
+            bank: paymentForSheet,
             customer: `${order.billing.firstName} ${order.billing.lastName}`,
             wa: order.billing.phone,
             email: order.billing.email || "-",
-            address: `${order.billing.street}, ${order.billing.apartment ? order.billing.apartment + ", " : ""}${order.billing.city}`,
+            address: `${order.billing.street}, ${order.billing.city}`,
             status: "Belum Dibayar",
             pdfUrl: invoiceUrl,
           }),
@@ -99,8 +112,8 @@ export default function OrderComplete() {
             product: productList,
             total: order.total,
             quantity: totalQty,
-            ongkir: order.shipping?.cost || 0,
-            shipping: order.shipping?.method || "-",
+            ongkir: 0,
+            shipping: "International",
             bank: paymentForSheet,
             customer: `${order.billing.firstName} ${order.billing.lastName}`,
             wa: order.billing.phone,
@@ -128,48 +141,58 @@ export default function OrderComplete() {
     <div className="max-w-3xl mx-auto p-4 md:p-8">
       <div className="bg-white rounded-lg shadow-md border p-6 md:p-8">
         <h1 className="text-3xl font-bold text-green-600 text-center mb-4">
-          Order Berhasil!
+          Order Received Successfully!
         </h1>
         <p className="text-center text-gray-600 mb-6">
-          Invoice otomatis dikirim ke WhatsApp Anda.
+          Your invoice has been sent automatically to your WhatsApp.
         </p>
 
         <div className="space-y-2 text-gray-800 leading-relaxed">
           <p><strong>Order ID:</strong> {order.orderId}</p>
-          <p><strong>Tanggal:</strong> {order.date}</p>
-          <p><strong>Nama:</strong> {order.billing.firstName} {order.billing.lastName}</p>
+          <p><strong>Date:</strong> {order.date}</p>
+          <p><strong>Name:</strong> {order.billing.firstName} {order.billing.lastName}</p>
           <p><strong>WhatsApp:</strong> {order.billing.phone}</p>
-          <p><strong>Produk:</strong> {productList || "Tidak ada item"}</p>
-          <p><strong>Jumlah Item:</strong> {totalQty}</p>
-          <p><strong>Subtotal:</strong> Rp {formatCurrency(order.subtotal)}</p>
-          {order.shipping?.cost > 0 && (
-            <p><strong>Ongkir ({order.shipping.method}):</strong> Rp {formatCurrency(order.shipping.cost)}</p>
-          )}
+          <p><strong>Product(s):</strong> {productList || "No items"}</p>
+          <p><strong>Total Items:</strong> {totalQty}</p>
+          <p><strong>Subtotal:</strong> Rp {formatCurrency(order.subtotal || order.total)}</p>
           <p><strong>Total:</strong> Rp {formatCurrency(order.total)}</p>
-          <p><strong>Alamat:</strong> {order.billing.street}{order.billing.apartment ? ", " + order.billing.apartment : ""}, {order.billing.city}, {order.billing.province}</p>
+          <p><strong>Address:</strong> {order.billing.street}{order.billing.apartment ? ", " + order.billing.apartment : ""}, {order.billing.city}, {order.billing.province || "International"}</p>
+          
           <p>
-            <strong>Metode Pembayaran:</strong>{" "}
-            {order.bank
-              ? `${order.bank.bank} - ${order.bank.account} a.n. ${order.bank.name}`
-              : order.payment === "qris" ? "QRIS" : "Virtual Account / Lainnya"}
+            <strong>Payment Method:</strong>{" "}
+            <span className="text-blue-600 font-medium">
+              {paymentDisplay}
+            </span>
           </p>
-          <p><strong>Status:</strong> <span className="text-orange-600 font-medium">Belum Dibayar</span></p>
+
+          {/* Notifikasi khusus PayPal & Crypto */}
+          {(order.paymentMethod === "PayPal" || order.paymentMethod === "Crypto") && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4 text-sm">
+              <p className="font-medium text-blue-900">
+                Payment received via {order.paymentMethod === "PayPal" ? "PayPal" : "Crypto USDT"}
+              </p>
+              <p className="text-gray-700 mt-1">
+                International shipping cost will be calculated and confirmed via WhatsApp shortly.
+              </p>
+            </div>
+          )}
+
+          <p><strong>Status:</strong> <span className="text-orange-600 font-medium">Awaiting Confirmation</span></p>
         </div>
 
         <div className="text-center mt-6">
           <a
             href={`https://wa.me/6281289066999?text=${encodeURIComponent(
-              `Hi Admin,\n\nBerikut untuk lampiran bukti transfer dengan Order ID: ${order.orderId}\n\nTerima Kasih!`
+              `Hello,\nOrder ID: ${order.orderId}\nPayment: ${paymentDisplay}\n\nPlease confirm my payment and shipping cost.\nThank you!`
             )}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold px-8 py-3 rounded-lg transition-all duration-200"
           >
-            Konfirmasi Pembayaran
+            Contact Us on WhatsApp
           </a>
         </div>
 
-        {/* Hidden PDF Template */}
         <div
           ref={invoiceRef}
           style={{

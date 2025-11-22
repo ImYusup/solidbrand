@@ -1,4 +1,4 @@
-// src/app/api/paypal/create-order/route.ts
+// src/app/api/capture-order/route.ts
 import { NextRequest } from "next/server";
 
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
@@ -20,26 +20,17 @@ async function getAccessToken() {
 }
 
 export async function POST(req: NextRequest) {
-  const { amount, currency } = await req.json();
+  const { orderID } = await req.json();
   const token = await getAccessToken();
 
-  const res = await fetch(`${PAYPAL_API}/v2/checkout/orders`, {
+  const res = await fetch(`${PAYPAL_API}/v2/checkout/orders/${orderID}/capture`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      intent: "CAPTURE",
-      purchase_units: [{ amount: { currency_code: currency, value: amount } }],
-      application_context: {
-        brand_name: "WebBotPro",
-        landing_page: "BILLING",
-        user_action: "PAY_NOW",
-      },
-    }),
   });
 
   const data = await res.json();
-  return Response.json({ orderID: data.id });
+  return Response.json(data);
 }
