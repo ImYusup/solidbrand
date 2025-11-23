@@ -152,7 +152,7 @@ export default function OrderComplete() {
           <p><strong>Date:</strong> {order.date}</p>
           <p><strong>Name:</strong> {order.billing.firstName} {order.billing.lastName}</p>
           <p><strong>WhatsApp:</strong> {order.billing.phone}</p>
-          <p><strong>Product(s):</strong> {productList || "No items"}</p>
+          <p><strong>Products:</strong> {productList || "No items"}</p>
           <p><strong>Total Items:</strong> {totalQty}</p>
           <p><strong>Subtotal:</strong> Rp {formatCurrency(order.subtotal || order.total)}</p>
           <p><strong>Total:</strong> Rp {formatCurrency(order.total)}</p>

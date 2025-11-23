@@ -4,7 +4,6 @@
 import Link from "next/link";
 import { products } from "@/data/products";
 
-// Format Rupiah
 function formatRupiah(amount: number) {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -27,44 +26,42 @@ export function FeaturedProductsSection() {
               key={product.id}
               className="border rounded-xl shadow hover:shadow-lg transition bg-white overflow-hidden flex flex-col"
             >
-              {/* 🖼 Product Image */}
-              {product.images && product.images[0] && (
-                <div className="w-full aspect-square overflow-hidden rounded-lg mb-4 bg-gray-100 flex items-center justify-center">
-                  <img
-                    src={product.images[0]}
-                    alt={product.name}
-                    className="max-w-full max-h-full object-contain"
-                  />
-                </div>
-              )}
+              <div className="w-full aspect-square overflow-hidden rounded-lg mb-4 bg-gray-100 flex items-center justify-center">
+                <img
+                  src={product.images?.[0] || "/placeholder.jpg"}
+                  alt={product.name}
+                  className="max-w-full max-h-full object-contain"
+                />
+              </div>
 
-              {/* 📄 Product Info */}
               <div className="p-5 flex flex-col flex-grow">
                 <h3 className="font-bold text-lg mb-2 line-clamp-2">{product.name}</h3>
                 <p className="text-gray-600 text-sm mb-4 line-clamp-2">{product.description}</p>
 
-                {/* 💰 Harga */}
+                {/* INI YANG BARU — AMAN, GA ADA typeof window */}
                 <div className="mb-4">
-                  {typeof window !== "undefined" && product.discountPrice && (
-                    <p className="text-gray-400 line-through text-sm">
-                      {formatRupiah(product.price)}
-                    </p>
-                  )}
-
-                  {typeof window !== "undefined" && (
+                  {product.discountPrice ? (
+                    <>
+                      <p className="text-gray-400 line-through text-sm">
+                        {formatRupiah(product.price)}
+                      </p>
+                      <p className="text-green-600 font-bold text-lg">
+                        {formatRupiah(product.discountPrice)}
+                      </p>
+                    </>
+                  ) : (
                     <p className="text-green-600 font-bold text-lg">
-                      {formatRupiah(product.discountPrice ?? product.price)}
+                      {formatRupiah(product.price)}
                     </p>
                   )}
                 </div>
 
-                {/* 🔗 View Product */}
                 <div className="mt-auto">
                   <Link
                     href={`/products/${product.id}`}
-                    className="text-primary font-semibold hover:underline"
+                    className="text-blue-600 font-semibold hover:underline"
                   >
-                    View Product →
+                    View Product
                   </Link>
                 </div>
               </div>

@@ -23,7 +23,7 @@ export function Header() {
             Layanan
           </Link>
           <Link
-            href="/#products"
+            href="/products"
             className="text-foreground font-bold text-lg hover:text-primary transition-colors"
           >
             Produk

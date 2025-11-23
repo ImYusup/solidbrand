@@ -2,7 +2,6 @@
 "use client";
 
 import { HeroSection } from "@/components/hero-section";
-import { ServicesSection } from "@/components/services-section";
 import { WhyChooseSection } from "@/components/why-choose-section";
 import { TestimonialsSection } from "@/components/testimonials-section";
 import { FeaturedProductsSection } from "@/components/FeaturedProductsSection";
@@ -12,7 +11,6 @@ export default function HomePage() {
     <div className="min-h-screen">
       <main>
         <HeroSection />
-        <ServicesSection />
         <FeaturedProductsSection />
         <WhyChooseSection />
         <TestimonialsSection />

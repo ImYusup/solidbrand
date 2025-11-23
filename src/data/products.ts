@@ -5,6 +5,8 @@ export type ProductVariant = {
   colorCode?: string;
   images: string[];
   videoUrl?: string;
+  price?: number;
+  weight?: number;
 };
 
 export type Product = {
@@ -21,6 +23,7 @@ export type Product = {
   images?: string[];
   videoUrl?: string;
   variants?: ProductVariant[];
+  weight?: number;
 };
 
 export const products: Product[] = [
@@ -29,6 +32,7 @@ export const products: Product[] = [
     name: "SOLID Mini Sling Bag – Tas Selempang Pria Wanita",
     price: 100000,
     discountPrice: 70000,
+    weight: 150,
     currency: "IDR",
     description:
       "Tas selempang premium berdesain minimalis dengan material waterproof. Ringkas, ringan, dan cocok untuk aktivitas harian seperti kerja, kuliah, riding, hingga hangout.",
@@ -68,6 +72,7 @@ export const products: Product[] = [
     name: "SOLID Urban Sling Bag – Tas Selempang Pria Wanita",
     price: 200000,
     discountPrice: 150000,
+    weight: 200,
     currency: "IDR",
     description:
       "Tas selempang premium berdesain urban minimalis dengan material waterproof. Ringkas, stylish, dan cocok untuk aktivitas harian seperti kerja, kuliah, riding, traveling, hingga hangout.",
@@ -109,6 +114,7 @@ export const products: Product[] = [
     name: "SOLID Titan Sling Bag – Tas Selempang Pria Wanita",
     price: 250000,
     discountPrice: 200000,
+    weight: 300,
     currency: "IDR",
     description:
       "Tas selempang premium dengan desain modern dan material waterproof. Ringkas, kuat, dan nyaman untuk aktivitas harian, kerja, atau traveling.",
@@ -150,6 +156,7 @@ export const products: Product[] = [
     price: 350000,
     discountPrice: 250000,
     currency: "IDR",
+    weight: 500,
     description:
       "Tas travel premium dengan desain tangguh, kapasitas besar, dan nyaman dipakai untuk perjalanan jauh maupun aktivitas harian.",
     features: [
@@ -187,10 +194,12 @@ export const products: Product[] = [
       "/products/travelbag/tastravel3-ht.png",
     ],
     variants: [
-       {
+      {
         id: "backpacker-travel-black",
         color: "Hitam",
         colorCode: "#1c1c1c",
+        price: 265000,
+        weight: 500,
         images: [
           "/products/travelbag/tastravel1-ht.png",
           "/products/travelbag/tastravel2-ht.png",
@@ -201,6 +210,8 @@ export const products: Product[] = [
         id: "backpacker-travel-green",
         color: "Hijau",
         colorCode: "#4b5320",
+        price: 250000,
+        weight: 500,
         images: [
           "/products/travelbag/tastravel1-hj.png",
           "/products/travelbag/tastravel2-hj.png",

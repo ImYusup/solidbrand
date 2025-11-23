@@ -189,33 +189,33 @@ export default function CheckoutForm() {
 
   useEffect(() => {
     if (!orderId) {
-      setLoadingOrder(false);
       setOrderError("Tidak ada Order ID.");
+      setLoadingOrder(false);
       return;
     }
 
     const saved = localStorage.getItem(`order_${orderId}`);
 
-    if (!saved || saved.trim() === "") {
-      setOrderError("Order tidak ditemukan atau belum dibuat. Silakan ulangi dari keranjang.");
+    if (!saved) {
+      setOrderError("Order tidak ditemukan. Silakan checkout ulang dari keranjang.");
       setLoadingOrder(false);
       return;
     }
 
     try {
-      console.log("OrderID:", orderId);
-      console.log("Saved data:", saved);
       const data: OrderData = JSON.parse(saved);
 
-      if (!data || !data.items || data.items.length === 0) {
-        setOrderError("Data order kosong. Silakan ulangi dari keranjang.");
-      } else {
-        setOrderItems(data.items); // 🔥 langsung load
+      if (!data?.items || data.items.length === 0) {
+        setOrderError("Keranjang kosong. Silakan tambah produk lagi.");
+        setLoadingOrder(false);
+        return;
       }
 
+      // LANGSUNG PAKAI — KARENA KITA SUDAH BERSIHIN ORDER LAMA DI CARTSIDEBAR
+      setOrderItems(data.items);
     } catch (err) {
-      console.error("JSON error:", err);
-      setOrderError("Data order rusak atau tidak valid.");
+      console.error("Parse order failed:", err);
+      setOrderError("Data order rusak. Silakan checkout ulang.");
     } finally {
       setLoadingOrder(false);
     }
@@ -276,6 +276,21 @@ export default function CheckoutForm() {
     !cityId ||
     !agreeTerms ||
     orderItems.length === 0;
+
+  // Clear Cart
+  useEffect(() => {
+    if (!orderId) return;
+
+    const interval = setInterval(() => {
+      const saved = localStorage.getItem(`order_${orderId}`);
+      if (!saved || !JSON.parse(saved)?.items?.length) {
+        setOrderItems([]);
+        setOrderError("Your cart has been emptied.");
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [orderId]);
 
   const handlePlaceOrder = () => {
     const orderData = {
@@ -567,34 +582,33 @@ export default function CheckoutForm() {
         <div>
           <h2 className="text-2xl font-bold mb-6 text-gray-800">YOUR ORDER</h2>
           <div className="bg-gray-50 rounded-lg p-6 space-y-4">
+            {/* GANTI BAGIAN INI DI CheckoutForm.tsx */}
             {orderItems.map((item, i) => {
               const product = products.find(p => p.id === item.productId);
               const variant = product?.variants?.find(v => v.id === item.variantId);
 
               return (
                 <div key={i} className="flex justify-between border-b pb-2">
-                  <div>
-                    <span className="font-medium">{item.title}</span>
-
-                    {/* Warna tampil di bawah title */}
+                  <div className="flex-1">
+                    <p className="font-medium">{item.title}</p>
                     {variant?.color && (
-                      <p className="text-xs mt-1 flex items-center gap-2">
-                        <span>Color:</span>
-                        <span
-                          className="w-4 h-4 rounded-full border"
-                          style={{ backgroundColor: variant.colorCode || "#ccc" }}
-                        ></span>
-                        <span>{variant.color}</span>
+                      <p className="text-xs text-gray-600 mt-1 flex items-center gap-2">
+                        Color: <span className="w-4 h-4 rounded-full border" style={{ backgroundColor: variant.colorCode || "#ccc" }} /> {variant.color}
                       </p>
                     )}
-
-                    <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
+                    <p className="text-xs text-gray-500">
+                      Qty: {item.quantity} × Rp {item.price.toLocaleString()}
+                      {item.weight > 0 && ` • ${item.quantity * item.weight}g`}
+                    </p>
                   </div>
-
-                  <span className="font-medium">Rp {(item.price * item.quantity).toLocaleString()}</span>
+                  <p className="font-medium">Rp {(item.price * item.quantity).toLocaleString()}</p>
                 </div>
               );
             })}
+
+            <div className="text-sm text-gray-600 mt-3 pt-3 border-t">
+              Total Berat: <strong>{weight} gram</strong> → dibulatkan jadi <strong>{Math.ceil(weight / 1000)} kg</strong> untuk ongkir
+            </div>
 
             {/* Ongkir / Cost Shipping */}
             {isManualShipping ? (
@@ -744,8 +758,8 @@ export default function CheckoutForm() {
                 loading
               }
               className={`w-full mt-8 py-5 rounded-lg font-bold text-white text-lg transition-all shadow-lg ${isFormValid && selectedPayment && (selectedPayment !== "card" || paypalPaid)
-                  ? "bg-green-600 hover:bg-green-700 cursor-pointer"
-                  : "bg-gray-400 cursor-not-allowed opacity-70"
+                ? "bg-green-600 hover:bg-green-700 cursor-pointer"
+                : "bg-gray-400 cursor-not-allowed opacity-70"
                 }`}
             >
               {selectedPayment === "card" && !paypalPaid ? (
