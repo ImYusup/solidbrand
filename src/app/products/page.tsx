@@ -1,14 +1,12 @@
 // src/app/products/page.tsx
+export const dynamic = "force-dynamic";
+
 "use client";
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { allProducts } from "@/data";
 import Image from "next/image";
-
-// TAMBAHIN BARIS INI AJA — INI YANG BIKIN VERCEL GA NGPRERENDER & ERROR ILANG
-export const dynamic = "force-dynamic";
-// SAMPE SINI AJA — CUMA 1 BARIS!
 
 export default function ProductsPage() {
   const params = useSearchParams();
