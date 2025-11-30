@@ -22,6 +22,10 @@ const nextConfig = {
     ],
   },
 
+  experimental: {
+    missingSuspenseWithCSRBailout: false,
+  },
+
   // === TAMBAHAN CORS UNTUK PAYPAL DI LOCALHOST ===
   async headers() {
     return [
