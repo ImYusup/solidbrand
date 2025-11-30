@@ -6,6 +6,10 @@ import { useSearchParams } from "next/navigation";
 import { allProducts } from "@/data";
 import Image from "next/image";
 
+// TAMBAHIN BARIS INI AJA — INI YANG BIKIN VERCEL GA NGPRERENDER & ERROR ILANG
+export const dynamic = "force-dynamic";
+// SAMPE SINI AJA — CUMA 1 BARIS!
+
 export default function ProductsPage() {
   const params = useSearchParams();
   const categoryFilter = params.get("category");
@@ -75,7 +79,7 @@ export default function ProductsPage() {
             </div>
           </aside>
 
-          {/* GRID PRODUCTS - DIPERBAIKI BIAR RATA 100% */}
+          {/* GRID PRODUCTS */}
           <div className="flex-1">
             {filteredProducts.length === 0 ? (
               <p className="text-center text-gray-500 py-10">No products available.</p>
@@ -86,7 +90,6 @@ export default function ProductsPage() {
                     key={product.id}
                     className="bg-white border rounded-xl shadow hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col h-full group"
                   >
-                    {/* GAMBAR - SAMA TINGGI & SMOOTH */}
                     <div className="relative w-full aspect-square bg-gray-100 overflow-hidden">
                       <Image
                         src={product.images?.[0] || "/placeholder.jpg"}
@@ -97,7 +100,6 @@ export default function ProductsPage() {
                       />
                     </div>
 
-                    {/* KONTEN - SEMUA SAMA TINGGI */}
                     <div className="p-5 flex flex-col flex-grow justify-between">
                       <div>
                         <h3 className="font-bold text-lg text-gray-900 line-clamp-2 min-h-[56px]">
@@ -108,7 +110,6 @@ export default function ProductsPage() {
                         </p>
                       </div>
 
-                      {/* HARGA - KONSISTEN TINGGI */}
                       <div className="mt-4 min-h-[56px] flex flex-col justify-end">
                         {product.discountPrice ? (
                           <div>
@@ -126,7 +127,6 @@ export default function ProductsPage() {
                         )}
                       </div>
 
-                      {/* BUTTON SELALU DI BAWAH */}
                       <div className="mt-6 pt-4 border-t border-gray-100">
                         <Link
                           href={`/products/${product.id}`}
