@@ -3,7 +3,7 @@
 
 import { HeroSection } from "@/components/hero-section";
 import { WhyChooseSection } from "@/components/why-choose-section";
-import { TestimonialsSection } from "@/components/testimonials-section";
+import { CustomerSlideshow } from "@/components/customer-slideshow";
 import { FeaturedProductsSection } from "@/components/FeaturedProductsSection";
 
 export default function HomePage() {
@@ -13,7 +13,7 @@ export default function HomePage() {
         <HeroSection />
         <FeaturedProductsSection />
         <WhyChooseSection />
-        <TestimonialsSection />
+        <CustomerSlideshow />   
       </main>
     </div>
   );

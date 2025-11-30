@@ -24,12 +24,14 @@ export type Product = {
   videoUrl?: string;
   variants?: ProductVariant[];
   weight?: number;
+  category?: string;
 };
 
 export const products: Product[] = [
   {
     id: "solid-minislingbag",
     name: "SOLID Mini Sling Bag – Tas Selempang Pria Wanita",
+    category: "Bags/Luggage",
     price: 100000,
     discountPrice: 70000,
     weight: 150,
@@ -70,6 +72,7 @@ export const products: Product[] = [
   {
     id: "urban-slingbag",
     name: "SOLID Urban Sling Bag – Tas Selempang Pria Wanita",
+    category: "Bags/Luggage",
     price: 200000,
     discountPrice: 150000,
     weight: 200,
@@ -112,6 +115,7 @@ export const products: Product[] = [
   {
     id: "titan-slingbag",
     name: "SOLID Titan Sling Bag – Tas Selempang Pria Wanita",
+    category: "Bags/Luggage",
     price: 250000,
     discountPrice: 200000,
     weight: 300,
@@ -153,6 +157,7 @@ export const products: Product[] = [
   {
     id: "backpacker-travel",
     name: "SOLID Backpacker Travel Bag – Tas Travel Pria Wanita",
+    category: "Bags/Luggage",
     price: 350000,
     discountPrice: 250000,
     currency: "IDR",

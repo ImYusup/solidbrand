@@ -64,10 +64,16 @@ export default function ProductDetail({ product }: { product: Product }) {
   }, [product, selectedVariant]);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
-  useEffect(() => {
-    if (mediaList.length > 0) setSelectedIndex(0);
-  }, [mediaList]);
+  // Hapus yang lama:
+  // useEffect(() => {
+  //   if (mediaList.length > 0) setSelectedIndex(0);
+  // }, [mediaList]);
 
+  // Ganti jadi yang ini:
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [selectedVariant, mediaList]);
+  
   const thumbContainerRef = useRef<HTMLDivElement>(null);
   const scrollThumbIntoView = (i: number) => {
     const container = thumbContainerRef.current;
@@ -166,11 +172,10 @@ export default function ProductDetail({ product }: { product: Product }) {
       <div className="w-full max-w-[520px] mx-auto">
         <div className="relative">
           {mediaList.length === 0 ? (
-            <div className="w-full h-[240px] md:h-[420px] bg-gray-100 flex items-center justify-center rounded-lg">
+            <div className="w-full h-[420px] bg-gray-100 flex items-center justify-center rounded-lg">
               <span className="text-gray-500 text-sm">No media available</span>
             </div>
-          ) : mediaList[selectedIndex].__typename === "Video" ? (
-            // Video handling tetap sama...
+          ) : mediaList[selectedIndex]?.__typename === "Video" ? (
             <div className="w-full bg-black rounded-lg shadow-lg overflow-hidden" style={{ aspectRatio: "3 / 4" }}>
               <iframe
                 src={mediaList[selectedIndex].sources[0].url}
@@ -179,13 +184,17 @@ export default function ProductDetail({ product }: { product: Product }) {
                 allowFullScreen
               />
             </div>
-          ) : (
+          ) : mediaList[selectedIndex] ? (
             <div className="w-full bg-[#f9f9f9] rounded-lg shadow-lg overflow-hidden" style={{ aspectRatio: "3 / 4" }}>
               <img
                 src={mediaList[selectedIndex].image.url}
                 alt={mediaList[selectedIndex].image.altText || product.name}
                 className="w-full h-full object-contain"
               />
+            </div>
+          ) : (
+            <div className="w-full h-[420px] bg-gray-100 flex items-center justify-center rounded-lg">
+              <span className="text-gray-500 text-sm">Loading...</span>
             </div>
           )}
 
@@ -255,7 +264,7 @@ export default function ProductDetail({ product }: { product: Product }) {
         {hasVariants && (
           <div className="mb-5">
             <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-              Select Color <span className="text-red-500">*</span>
+              Select Variant <span className="text-red-500">*</span>
             </h3>
             <div className="flex gap-3 flex-wrap">
               {product.variants?.map((variant) => (
@@ -277,7 +286,7 @@ export default function ProductDetail({ product }: { product: Product }) {
             {/* Warning kalau belum pilih */}
             {!selectedVariant && (
               <p className="text-red-600 text-sm mt-2 animate-pulse font-medium">
-                Please select a color before adding to cart
+                Please select a variant before adding to cart
               </p>
             )}
           </div>
@@ -319,7 +328,7 @@ export default function ProductDetail({ product }: { product: Product }) {
               : "bg-gray-200 text-gray-500 cursor-not-allowed"
               }`}
           >
-            {isVariantSelected ? "Add to Cart" : "Select Color First"}
+            {isVariantSelected ? "Add to Cart" : "Select Variant First"}
           </button>
 
           <button
@@ -330,7 +339,7 @@ export default function ProductDetail({ product }: { product: Product }) {
               : "bg-gray-200 text-gray-500 cursor-not-allowed"
               }`}
           >
-            {isVariantSelected ? "Buy Now" : "Please Select Color"}
+            {isVariantSelected ? "Buy Now" : "Please Select Variant"}
           </button>
 
           <button

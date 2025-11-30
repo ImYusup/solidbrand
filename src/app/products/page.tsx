@@ -1,8 +1,27 @@
 // src/app/products/page.tsx
+"use client";
+
 import Link from "next/link";
-import { products } from "@/data/products";
+import { useSearchParams } from "next/navigation";
+import { allProducts } from "@/data";
+import Image from "next/image";
 
 export default function ProductsPage() {
+  const params = useSearchParams();
+  const categoryFilter = params.get("category");
+
+  const filteredProducts = categoryFilter
+    ? allProducts.filter((p) => p.category === categoryFilter)
+    : allProducts;
+
+  const categories = [
+    ...new Set(
+      allProducts
+        .map((p) => p.category)
+        .filter((cat): cat is string => typeof cat === "string")
+    ),
+  ];
+
   const formatRupiah = (amount: number) =>
     new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -13,32 +32,42 @@ export default function ProductsPage() {
       .replace("IDR", "Rp")
       .trim();
 
-  const categories = [
-    { name: "Bags/Luggage", href: "/#products" },
-    { name: "Jersey Sports", href: "/#jersey" },
-  ];
-
   return (
     <div className="min-h-screen bg-gray-50 py-16">
       <div className="max-w-7xl mx-auto px-4">
-        <h1 className="text-4xl font-bold text-center mb-12 text-gray-900">All Products</h1>
+        <h1 className="text-4xl font-bold text-center mb-12 text-gray-900">
+          {categoryFilter || "All Products"}
+        </h1>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* SIDEBAR KIRI — LEBAR TETAP, TAPI GA GANGGU GRID */}
+          {/* SIDEBAR */}
           <aside className="lg:w-64 flex-shrink-0">
             <div className="bg-white rounded-2xl shadow-md p-8 sticky top-24 border">
-              <h3 className="text-2xl font-bold mb-8 text-gray-900">Categories</h3>
+              <h3 className="text-2xl font-bold mb-6">Categories</h3>
               <ul className="space-y-4">
+                <li>
+                  <Link
+                    href="/products"
+                    className={`block py-3 px-5 rounded-xl font-semibold transition ${
+                      !categoryFilter
+                        ? "bg-accent text-white"
+                        : "text-gray-800 hover:bg-gray-100"
+                    }`}
+                  >
+                    All Products
+                  </Link>
+                </li>
                 {categories.map((cat) => (
-                  <li key={cat.name}>
+                  <li key={cat}>
                     <Link
-                      href={cat.href}
-                      className="block py-4 px-6 rounded-xl font-bold text-gray-800 hover:bg-gray-100 transition flex items-center justify-between group"
+                      href={`/products?category=${encodeURIComponent(cat)}`}
+                      className={`block py-3 px-5 rounded-xl font-semibold transition ${
+                        categoryFilter === cat
+                          ? "bg-accent text-white"
+                          : "text-gray-800 hover:bg-gray-100"
+                      }`}
                     >
-                      {cat.name}
-                      <span className="text-gray-500 group-hover:text-black group-hover:translate-x-1 transition">
-                        →
-                      </span>
+                      {cat}
                     </Link>
                   </li>
                 ))}
@@ -46,57 +75,71 @@ export default function ProductsPage() {
             </div>
           </aside>
 
-          {/* GRID PRODUK — FULL LEBAR, SAMA PERSIS KAYAK FEATURED */}
+          {/* GRID PRODUCTS - DIPERBAIKI BIAR RATA 100% */}
           <div className="flex-1">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {products.map((product) => (
-                <div
-                  key={product.id}
-                  className="border rounded-xl shadow hover:shadow-lg transition bg-white overflow-hidden flex flex-col"
-                >
-                  {/* GAMBAR — BESAR & RATA */}
-                  <div className="w-full aspect-square overflow-hidden rounded-lg mb-4 bg-gray-100 flex items-center justify-center">
-                    <img
-                      src={product.images?.[0] || "/placeholder.jpg"}
-                      alt={product.name}
-                      className="max-w-full max-h-full object-contain"
-                    />
-                  </div>
+            {filteredProducts.length === 0 ? (
+              <p className="text-center text-gray-500 py-10">No products available.</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {filteredProducts.map((product) => (
+                  <div
+                    key={product.id}
+                    className="bg-white border rounded-xl shadow hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col h-full group"
+                  >
+                    {/* GAMBAR - SAMA TINGGI & SMOOTH */}
+                    <div className="relative w-full aspect-square bg-gray-100 overflow-hidden">
+                      <Image
+                        src={product.images?.[0] || "/placeholder.jpg"}
+                        alt={product.name}
+                        fill
+                        className="object-contain p-6 transition-transform duration-500 group-hover:scale-105"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                      />
+                    </div>
 
-                  {/* INFO */}
-                  <div className="p-5 flex flex-col flex-grow">
-                    <h3 className="font-bold text-lg mb-2 line-clamp-2 text-gray-900">
-                      {product.name}
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                      {product.description}
-                    </p>
-
-                    {/* HARGA */}
-                    <div className="mb-4">
-                      {product.discountPrice && (
-                        <p className="text-gray-400 line-through text-sm">
-                          {formatRupiah(product.price)}
+                    {/* KONTEN - SEMUA SAMA TINGGI */}
+                    <div className="p-5 flex flex-col flex-grow justify-between">
+                      <div>
+                        <h3 className="font-bold text-lg text-gray-900 line-clamp-2 min-h-[56px]">
+                          {product.name}
+                        </h3>
+                        <p className="text-gray-600 text-sm mt-2 line-clamp-2 min-h-[40px]">
+                          {product.description}
                         </p>
-                      )}
-                      <p className="text-green-600 font-bold text-lg">
-                        {formatRupiah(product.discountPrice ?? product.price)}
-                      </p>
-                    </div>
+                      </div>
 
-                    {/* CTA */}
-                    <div className="mt-auto">
-                      <Link
-                        href={`/products/${product.id}`}
-                        className="text-blue-600 font-semibold hover:underline"
-                      >
-                        View Product →
-                      </Link>
+                      {/* HARGA - KONSISTEN TINGGI */}
+                      <div className="mt-4 min-h-[56px] flex flex-col justify-end">
+                        {product.discountPrice ? (
+                          <div>
+                            <p className="text-gray-400 line-through text-sm">
+                              {formatRupiah(product.price)}
+                            </p>
+                            <p className="text-accent font-bold text-xl">
+                              {formatRupiah(product.discountPrice)}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-accent font-bold text-xl">
+                            {formatRupiah(product.price)}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* BUTTON SELALU DI BAWAH */}
+                      <div className="mt-6 pt-4 border-t border-gray-100">
+                        <Link
+                          href={`/products/${product.id}`}
+                          className="text-accent font-semibold hover:underline flex items-center gap-1 transition"
+                        >
+                          View Product <span className="text-lg">→</span>
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
