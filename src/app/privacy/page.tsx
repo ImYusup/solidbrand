@@ -1,97 +1,110 @@
-"use client"
+// src/app/privacy/page.tsx
+"use client";
 
-import { Bot } from "lucide-react"
+import { ShieldCheck, Mail } from "lucide-react";
 
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-100 to-white">
       <section className="py-20 container mx-auto px-4 flex-1">
+
+        {/* HEADER */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-600 mb-4 animate-pulse">
-            Privacy Policy
+          <h1 className="text-5xl font-extrabold mb-4">
+            Privacy <span className="text-primary">Policy</span>
           </h1>
-          <p className="text-lg text-muted-foreground font-serif italic">
-            Protecting your privacy is our priority at WebBotPro
+          <p className="text-lg text-muted-foreground font-serif">
+            Your privacy and data protection at SolidBrand
           </p>
         </div>
 
-        <div className="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-2xl border border-gray-200 transform hover:scale-105 transition-all duration-300">
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            {/* Icon Section */}
-            <div className="md:w-1/3">
-              <div className="w-32 h-32 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Bot className="h-12 w-12 text-primary" />
-              </div>
+        {/* MAIN CARD */}
+        <div className="max-w-3xl mx-auto bg-white p-10 rounded-2xl shadow-xl border border-gray-200">
+
+          {/* INTRO */}
+          <div className="flex flex-col md:flex-row items-center gap-6 mb-10">
+            <div className="w-24 h-24 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <ShieldCheck className="h-10 w-10 text-primary" />
             </div>
 
-            {/* Privacy Content */}
-            <div className="md:w-2/3">
-              <h2 className="text-2xl font-bold text-foreground mb-4">Our Commitment</h2>
-              <p className="text-foreground font-serif mb-4 leading-relaxed">
-                At <strong>WebBotPro</strong>, we respect and protect your privacy. This Privacy
-                Policy explains how we collect, use, and safeguard your data when using our
-                automation and financial services.
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Our Privacy Commitment</h2>
+              <p className="text-muted-foreground font-serif leading-relaxed">
+                <strong>SolidBrand</strong> is committed to protecting and
+                respecting your privacy. This Privacy Policy explains how we
+                collect, use, and safeguard your personal information.
               </p>
             </div>
           </div>
 
-          {/* Details */}
-          <div className="mt-8 space-y-6">
+          {/* CONTENT */}
+          <div className="space-y-8 text-muted-foreground font-serif">
+
             <section>
-              <h3 className="text-xl font-semibold text-primary mb-2">Information We Collect</h3>
-              <ul className="list-disc list-inside text-foreground font-serif space-y-2">
-                <li>WhatsApp phone number and messages sent to our service.</li>
-                <li>Basic contact details you provide when using our platform.</li>
-                <li>Usage data such as logs and interactions for analytics and improvements.</li>
+              <h3 className="text-xl font-semibold text-primary mb-2">
+                Information We Collect
+              </h3>
+              <ul className="list-disc list-inside space-y-2">
+                <li>Name, WhatsApp number, and contact details</li>
+                <li>Order details and custom product requirements</li>
+                <li>Communications made via WhatsApp or other channels</li>
               </ul>
             </section>
 
             <section>
-              <h3 className="text-xl font-semibold text-primary mb-2">How We Use Data</h3>
-              <ul className="list-disc list-inside text-foreground font-serif space-y-2">
-                <li>To deliver and improve our automation and reporting features.</li>
-                <li>To send updates and notifications related to your account.</li>
-                <li>To comply with legal and regulatory requirements.</li>
+              <h3 className="text-xl font-semibold text-primary mb-2">
+                How We Use Your Information
+              </h3>
+              <ul className="list-disc list-inside space-y-2">
+                <li>To process orders and provide custom production services</li>
+                <li>To share production updates and delivery information</li>
+                <li>To improve our products and customer services</li>
               </ul>
             </section>
 
             <section>
-              <h3 className="text-xl font-semibold text-primary mb-2">Data Protection</h3>
-              <p className="text-foreground font-serif leading-relaxed">
-                We apply industry-standard security measures to safeguard your data from
-                unauthorized access, alteration, disclosure, or destruction.
+              <h3 className="text-xl font-semibold text-primary mb-2">
+                Data Security
+              </h3>
+              <p className="leading-relaxed">
+                We implement reasonable and industry-standard security measures
+                to protect your data from unauthorized access, misuse, or
+                disclosure.
               </p>
             </section>
 
             <section>
-              <h3 className="text-xl font-semibold text-primary mb-2">Third-Party Services</h3>
-              <p className="text-foreground font-serif leading-relaxed">
-                We may work with trusted third parties (like Meta Platforms for WhatsApp Cloud API)
-                to process data on our behalf.
+              <h3 className="text-xl font-semibold text-primary mb-2">
+                Third-Party Services
+              </h3>
+              <p className="leading-relaxed">
+                SolidBrand does not share personal data with third parties,
+                except when required to fulfill services such as logistics or
+                when legally obligated.
               </p>
             </section>
 
             <section>
-              <h3 className="text-xl font-semibold text-primary mb-2">Contact Us</h3>
-              <p className="text-foreground font-serif leading-relaxed">
-                If you have any questions about this Privacy Policy, please reach out at:
-                <br />
-                📧{" "}
+              <h3 className="text-xl font-semibold text-primary mb-2">
+                Contact Us
+              </h3>
+              <p className="leading-relaxed flex items-center gap-2">
+                <Mail className="h-4 w-4 text-primary" />
                 <a
-                  href="mailto:webbotproo@gmail.com?subject=Privacy%20Policy%20Inquiry%20%7C%20WebBotPro"
-                  className="text-primary font-bold hover:underline"
+                  href="mailto:solidbrand@gmail.com?subject=Privacy%20Policy%20Inquiry"
+                  className="text-primary font-semibold hover:underline"
                 >
-                  webbotproo@gmail.com
+                  solidbrand@gmail.com
                 </a>
               </p>
             </section>
 
-            <p className="text-sm text-muted-foreground italic">
+            <p className="text-sm italic text-gray-400 pt-6">
               Effective Date: September 2025
             </p>
           </div>
         </div>
       </section>
     </div>
-  )
+  );
 }

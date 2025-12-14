@@ -1,7 +1,7 @@
 // src/components/header.tsx
 "use client";
 
-import { Menu, X, Bot } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 
@@ -11,75 +11,81 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-24 items-center justify-between px-4">
-        {/* Logo - Klikable ke Home */}
-        <Link href="/" className="flex items-center space-x-2">
-          <Bot className="h-8 w-8 text-primary" />
-          <span className="font-bold text-2xl">WebBotPro</span>
+
+        {/* BRAND */}
+        <Link href="/" className="flex items-center">
+          <span className="font-bold text-2xl tracking-tight lowercase">
+            solid<span className="text-primary">brand</span>
+          </span>
         </Link>
 
-        {/* Desktop Navigation */}
+        {/* DESKTOP NAV */}
         <nav className="hidden md:flex items-center space-x-8">
-          <Link href="/#services" className="text-foreground font-bold text-lg hover:text-primary transition-colors">
-            Layanan
-          </Link>
           <Link
             href="/products"
-            className="text-foreground font-bold text-lg hover:text-primary transition-colors"
+            className="text-foreground font-semibold text-lg hover:text-primary transition-colors"
           >
             Produk
           </Link>
-          <Link href="/#why-choose" className="text-foreground font-bold text-lg hover:text-primary transition-colors">
-            Kenapa Kami
+
+          <Link
+            href="/#custom"
+            className="text-foreground font-semibold text-lg hover:text-primary transition-colors"
+          >
+            Custom
           </Link>
-          <Link href="/#testimonials" className="text-foreground font-bold text-lg hover:text-primary transition-colors">
-            Testimoni
-          </Link>
-          <Link href="/#contact" className="text-foreground font-bold text-lg hover:text-primary transition-colors">
-            Kontak
+
+          {/* FIXED */}
+          <Link
+            href="/about-us"
+            className="text-foreground font-semibold text-lg hover:text-primary transition-colors"
+          >
+            Tentang Kami
           </Link>
         </nav>
 
-        {/* Mobile Menu Button */}
-        <button className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        {/* MOBILE BUTTON */}
+        <button
+          className="md:hidden"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          aria-label="Toggle Menu"
+        >
+          {isMenuOpen ? <X size={26} /> : <Menu size={26} />}
         </button>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* MOBILE NAV */}
       {isMenuOpen && (
         <div className="md:hidden border-t bg-background">
-          <nav className="container mx-auto px-4 py-4 space-y-4">
+          <nav className="container mx-auto px-4 py-6 space-y-4">
             <Link
-              href="/#services"
-              className="block text-foreground font-bold text-lg hover:text-primary transition-colors"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Layanan
-            </Link>
-            <Link
-              href="/#products"
-              className="block text-foreground font-bold text-lg hover:text-primary transition-colors"
+              href="/products"
+              className="block text-foreground font-semibold text-lg"
               onClick={() => setIsMenuOpen(false)}
             >
               Produk
             </Link>
+
             <Link
-              href="/#why-choose"
-              className="block text-foreground font-bold text-lg hover:text-primary transition-colors"
+              href="/#custom"
+              className="block text-foreground font-semibold text-lg"
               onClick={() => setIsMenuOpen(false)}
             >
-              Kenapa Kami
+              Custom
             </Link>
+
+            {/* FIXED */}
             <Link
-              href="/#testimonials"
-              className="block text-foreground font-bold text-lg hover:text-primary transition-colors"
+              href="/about-us"
+              className="block text-foreground font-semibold text-lg"
               onClick={() => setIsMenuOpen(false)}
             >
-              Testimoni
+              Tentang Kami
             </Link>
+
             <Link
               href="/#contact"
-              className="block text-foreground font-bold text-lg hover:text-primary transition-colors"
+              className="block text-foreground font-semibold text-lg"
               onClick={() => setIsMenuOpen(false)}
             >
               Kontak

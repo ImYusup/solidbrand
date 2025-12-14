@@ -24,90 +24,87 @@ const manrope = Manrope({
 
 // Metadata SEO & Social
 export const metadata: Metadata = {
-  title:
-    "WebBotPro - WhatsApp Automation, Digital Marketing & Business Intelligence",
+  title: "Produksi Tas & Jersey Custom | Satuan & Tim – Solid Brand",
   description:
-    "WebBotPro membantu bisnis dengan WhatsApp Commerce Automation, Digital Presence & Marketing, serta Data & Business Intelligence untuk UMKM & perusahaan.",
+    "Solid Brand melayani penjualan tas premium dan produksi jersey custom. Bisa order satuan, tim, komunitas, hingga produksi brand dengan desain eksklusif dan bahan berkualitas.",
+
   icons: {
-    icon: "/favicon.png",
+    icon: "/logo/logo.png",
   },
+
   keywords: [
-    "WhatsApp Commerce Automation",
-    "WhatsApp Automation",
-    "Bisnis Online",
-    "WhatsApp Business",
-    "AutoReply",
-    "Chatbot",
-    "UMKM Go Digital",
-    "Online Shop",
-    "Ecommerce",
-    "Google Sheets Integration",
-    "Invoice Automation",
-    "Digital Marketing",
-    "Jasa Website",
-    "Sosial Media Management",
-    "SEO",
-    "Iklan Digital",
-    "Brand Awareness",
-    "Social Media Growth",
-    "Online Business",
-    "Jasa Digital Marketing",
-    "Grow Your Business",
-    "Business Intelligence",
-    "Data Driven",
-    "Power BI",
-    "Dashboard Interaktif",
-    "Data Analytics",
-    "Data Visualization",
-    "Digitalisasi Bisnis",
-    "Otomasi Bisnis",
-    "WebBotPro",
-    "Grow With Data",
+    // TAS
+    "tas custom",
+    "produksi tas",
+    "tas premium",
+    "tas konveksi",
+    "tas brand lokal",
+    "tas custom satuan",
+    "tas custom grosir",
+
+    // JERSEY
+    "jersey custom",
+    "jersey olahraga",
+    "jersey futsal custom",
+    "jersey basket custom",
+    "jersey voli custom",
+    "jersey badminton custom",
+    "jersey tim",
+    "jersey komunitas",
+
+    // BISNIS
+    "konveksi tas dan jersey",
+    "produksi tas dan jersey",
+    "custom jersey satuan",
+    "custom jersey tim",
+    "vendor jersey custom",
+    "vendor tas custom",
+
+    // BRAND
+    "Solid Brand",
+    "solidbrand id",
   ],
-  generator: "WebBotPro Platform",
-  metadataBase: new URL("https://webbotpro.com"),
+
+  generator: "Solid Brand",
+  metadataBase: new URL("https://solidbrand.id"),
+
   openGraph: {
-    title: "WebBotPro - Automation & Digital Solutions",
+    title: "Produksi Tas & Jersey Custom | Satuan & Tim – Solid Brand",
     description:
-      "Solusi WhatsApp Automation, Digital Marketing, dan Data Intelligence untuk meningkatkan bisnis Anda.",
-    url: "https://webbotpro.com",
-    siteName: "WebBotPro",
+      "Jual tas premium & terima custom jersey olahraga. Melayani order satuan, tim, komunitas, hingga produksi brand.",
+    url: "https://solidbrand.id",
+    siteName: "Solid Brand",
     images: [
       {
-        url: "https://webbotpro.com/og-image.png",
+        url: "https://solidbrand.id/og-image.png",
         width: 1200,
         height: 630,
-        alt: "WebBotPro Automation Solutions",
+        alt: "Produksi Tas & Jersey Custom Solid Brand",
       },
     ],
     locale: "id_ID",
     type: "website",
   },
+
   twitter: {
     card: "summary_large_image",
-    site: "@webbotpro",
-    title: "WebBotPro - Automation & Digital Solutions",
+    title: "Produksi Tas & Jersey Custom | Solid Brand",
     description:
-      "Bangun kehadiran digital bisnis dengan WhatsApp Automation, Digital Marketing, dan Data Intelligence.",
-    images: ["https://webbotpro.com/og-image.png"],
+      "Vendor tas & jersey custom. Bisa satuan, tim, komunitas, hingga produksi brand.",
+    images: ["https://solidbrand.id/og-image.png"],
   },
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const isProduction = process.env.NODE_ENV === "production";
-  const midtransClientKey = isProduction
-    ? process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY
-    : process.env.NEXT_PUBLIC_MIDTRANS_SANDBOX_CLIENT_KEY;
-
   return (
     <html
       lang="id"
       className={`${geist.variable} ${manrope.variable} antialiased`}
     >
       <head>
-        <link rel="icon" href="/favicon.png" type="image/png" />
+        <link rel="icon" href="/logo/favicon.png" type="image/png" />
       </head>
       <body className="font-sans min-h-screen flex flex-col">
         <Header />
@@ -116,6 +113,7 @@ export default function RootLayout({
         {/* ✅ Sidebar Cart selalu available */}
         <CartSidebar />
 
+        {/* ✅ PayPal only */}
         <Script
           src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&components=hosted-fields,buttons&currency=IDR&intent=capture&disable-funding=credit,card`}
           strategy="beforeInteractive"
@@ -124,6 +122,7 @@ export default function RootLayout({
     </html>
   );
 }
+
 
 
 
