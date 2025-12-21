@@ -25,7 +25,7 @@ export function Header() {
             href="/products"
             className="text-foreground font-semibold text-lg hover:text-primary transition-colors"
           >
-            Produk
+            Products
           </Link>
 
           <Link
@@ -40,7 +40,7 @@ export function Header() {
             href="/about-us"
             className="text-foreground font-semibold text-lg hover:text-primary transition-colors"
           >
-            Tentang Kami
+            About Us
           </Link>
         </nav>
 
@@ -63,7 +63,7 @@ export function Header() {
               className="block text-foreground font-semibold text-lg"
               onClick={() => setIsMenuOpen(false)}
             >
-              Produk
+              Products
             </Link>
 
             <Link
@@ -80,7 +80,7 @@ export function Header() {
               className="block text-foreground font-semibold text-lg"
               onClick={() => setIsMenuOpen(false)}
             >
-              Tentang Kami
+              About Us
             </Link>
 
             <Link
@@ -88,7 +88,7 @@ export function Header() {
               className="block text-foreground font-semibold text-lg"
               onClick={() => setIsMenuOpen(false)}
             >
-              Kontak
+              Contact
             </Link>
           </nav>
         </div>

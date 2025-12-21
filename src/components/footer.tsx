@@ -8,7 +8,6 @@ import {
   Phone,
   MapPin,
 } from "lucide-react";
-import know from "next/link";
 import Link from "next/link";
 
 export function Footer() {
@@ -26,11 +25,11 @@ export function Footer() {
             </div>
 
             <p className="text-muted-foreground font-serif max-w-sm mx-auto md:mx-0">
-              Produksi tas premium & jersey custom. Melayani order satuan, tim,
-              komunitas, hingga produksi brand.
+              Premium bag manufacturing & custom jerseys. Serving individual,
+              team, community, and brand-scale production.
             </p>
 
-            {/* SOCIAL MEDIA – ONE ROW */}
+            {/* SOCIAL MEDIA */}
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-6">
 
               {/* SOLID BAG */}
@@ -81,17 +80,17 @@ export function Footer() {
           {/* CONTACT */}
           <div id="contact" className="mb-10 md:mb-0">
             <h3 className="font-bold text-lg mb-4 text-primary">
-              Hubungi Kami
+              Contact Us
             </h3>
             <ul className="space-y-2 text-muted-foreground font-serif">
               <li className="flex items-start gap-2 justify-center md:justify-start">
                 <Phone className="h-4 w-4 mt-1 text-primary" />
                 <a
-                  href="https://wa.me/6281289066999?text=Halo%20SolidBrand%2C%20saya%20ingin%20custom%20tas%20atau%20jersey."
+                  href="https://wa.me/6281289066999?text=Hello%20SolidBrand%2C%20I%20would%20like%20to%20custom%20bags%20or%20jerseys."
                   target="_blank"
                   className="hover:text-primary"
                 >
-                  0812-8906-6999
+                  +62 812-8906-6999
                 </a>
               </li>
               <li className="flex items-start gap-2 justify-center md:justify-start">
@@ -105,7 +104,7 @@ export function Footer() {
               </li>
               <li className="flex items-start gap-2 justify-center md:justify-start">
                 <MapPin className="h-4 w-4 mt-1 text-primary" />
-                <span>Bandung – Jawa Barat, Indonesia</span>
+                <span>Bandung – West Java, Indonesia</span>
               </li>
             </ul>
           </div>
@@ -129,15 +128,17 @@ export function Footer() {
                   href="/products?category=Jersey Sports"
                   className="hover:text-primary"
                 >
-                  Jersey Sports
+                  Sports Jerseys
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Company */}
+          {/* COMPANY */}
           <div className="mb-10 md:mb-0">
-            <h3 className="font-bold text-lg mb-4 text-primary">Company</h3>
+            <h3 className="font-bold text-lg mb-4 text-primary">
+              Company
+            </h3>
             <ul className="space-y-2 text-muted-foreground font-serif">
               <li>
                 <Link href="/about-us" className="hover:text-primary transition-colors">
@@ -167,7 +168,7 @@ export function Footer() {
         {/* COPYRIGHT */}
         <div className="mt-12 text-center text-muted-foreground font-serif">
           <p className="font-bold text-lg">
-            &copy; 2025 Solid Brand. All rights reserved.
+            &copy; 2025 SolidBrand. All rights reserved.
           </p>
         </div>
       </div>

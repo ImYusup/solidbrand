@@ -22,56 +22,60 @@ const manrope = Manrope({
   variable: "--font-manrope",
 });
 
-// Metadata SEO & Social
+// 🌍 Global SEO Metadata
 export const metadata: Metadata = {
-  title: "Produksi Tas & Jersey Custom | Satuan & Tim – Solid Brand",
+  title: "Custom Bags & Sports Jerseys Manufacturer | Solid Brand",
   description:
-    "Solid Brand melayani penjualan tas premium dan produksi jersey custom. Bisa order satuan, tim, komunitas, hingga produksi brand dengan desain eksklusif dan bahan berkualitas.",
+    "Solid Brand is a professional manufacturer of premium custom bags and sports jerseys. Serving individual orders, teams, communities, and global brand-scale production with high-quality materials and exclusive designs.",
 
   icons: {
     icon: "/logo/logo.png",
   },
 
   keywords: [
-    // TAS
+    // 🌍 EN — GLOBAL
+    "custom bags manufacturer",
+    "custom sports jerseys",
+    "custom jersey supplier",
+    "premium custom bags",
+    "custom backpack manufacturer",
+    "custom sling bag",
+    "custom travel bag",
+    "custom team jerseys",
+    "sportswear manufacturer",
+    "custom apparel production",
+    "private label bags",
+    "OEM bags manufacturer",
+    "OEM jersey manufacturer",
+
+    // 🇮🇩 ID — LOCAL (tetap dipertahankan)
     "tas custom",
     "produksi tas",
     "tas premium",
-    "tas konveksi",
-    "tas brand lokal",
+    "konveksi tas",
     "tas custom satuan",
     "tas custom grosir",
-
-    // JERSEY
     "jersey custom",
     "jersey olahraga",
     "jersey futsal custom",
     "jersey basket custom",
     "jersey voli custom",
-    "jersey badminton custom",
-    "jersey tim",
-    "jersey komunitas",
-
-    // BISNIS
-    "konveksi tas dan jersey",
-    "produksi tas dan jersey",
-    "custom jersey satuan",
-    "custom jersey tim",
     "vendor jersey custom",
     "vendor tas custom",
 
     // BRAND
     "Solid Brand",
-    "solidbrand id",
+    "solidbrand",
+    "solidbrand indonesia",
   ],
 
   generator: "Solid Brand",
   metadataBase: new URL("https://solidbrand.id"),
 
   openGraph: {
-    title: "Produksi Tas & Jersey Custom | Satuan & Tim – Solid Brand",
+    title: "Custom Bags & Sports Jerseys Manufacturer | Solid Brand",
     description:
-      "Jual tas premium & terima custom jersey olahraga. Melayani order satuan, tim, komunitas, hingga produksi brand.",
+      "Premium custom bags and sports jerseys manufacturer. Available for individual orders, teams, communities, and brand-scale production worldwide.",
     url: "https://solidbrand.id",
     siteName: "Solid Brand",
     images: [
@@ -79,18 +83,18 @@ export const metadata: Metadata = {
         url: "https://solidbrand.id/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Produksi Tas & Jersey Custom Solid Brand",
+        alt: "Custom Bags & Sports Jerseys by Solid Brand",
       },
     ],
-    locale: "id_ID",
+    locale: "en_US",
     type: "website",
   },
 
   twitter: {
     card: "summary_large_image",
-    title: "Produksi Tas & Jersey Custom | Solid Brand",
+    title: "Custom Bags & Sports Jerseys Manufacturer | Solid Brand",
     description:
-      "Vendor tas & jersey custom. Bisa satuan, tim, komunitas, hingga produksi brand.",
+      "Premium custom bags & sports jerseys manufacturer for teams, communities, and brands worldwide.",
     images: ["https://solidbrand.id/og-image.png"],
   },
 };
@@ -100,7 +104,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html
-      lang="id"
+      lang="en"
       className={`${geist.variable} ${manrope.variable} antialiased`}
     >
       <head>
@@ -110,7 +114,7 @@ export default function RootLayout({
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
-        {/* ✅ Sidebar Cart selalu available */}
+        {/* ✅ Sidebar Cart always available */}
         <CartSidebar />
 
         {/* ✅ PayPal only */}
@@ -122,8 +126,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-
-
-
-

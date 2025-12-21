@@ -36,33 +36,63 @@ export default function CartSidebar() {
           variantId: item.variantId || "",
           title: product?.name || item.title,
           color: variant?.color || item.color || "",
-          price: variant?.price || product?.discountPrice || product?.price || item.price,
+          price:
+            variant?.price ??
+            product?.discountPrice ??
+            product?.price ??
+            item.price,
           quantity: item.quantity,
           image: variant?.images?.[0] || product?.images?.[0] || item.image,
-          weight: (variant?.weight ?? product?.weight ?? 0),
+          weight: variant?.weight ?? product?.weight ?? 0,
         };
       });
 
-      const subtotal = enrichedItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+      const subtotal = enrichedItems.reduce(
+        (sum, i) => sum + i.price * i.quantity,
+        0
+      );
 
-      // BERSIHIN SEMUA ORDER LAMA DULUAN
-      Object.keys(localStorage).forEach(key => {
+      // 🧹 HAPUS ORDER LAMA
+      Object.keys(localStorage).forEach((key) => {
         if (key.startsWith("order_")) localStorage.removeItem(key);
       });
 
-      // BUAT ORDER BARU
-      const orderId = `ORD-${Date.now()}`;
-      localStorage.setItem(`order_${orderId}`, JSON.stringify({
-        order_id: orderId,
-        items: enrichedItems,
-        subtotal,
-      }));
+      // 🚀 REQUEST KE BACKEND (SOURCE OF TRUTH)
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: enrichedItems,
+          subtotal,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Checkout API failed");
+
+      const data = await res.json();
+
+      if (!data.success || !data.order_id) {
+        throw new Error("Invalid checkout response");
+      }
+
+      const orderId = data.order_id;
+
+      // 💾 SIMPAN ORDER
+      localStorage.setItem(
+        `order_${orderId}`,
+        JSON.stringify({
+          order_id: orderId,
+          items: enrichedItems,
+          subtotal,
+        })
+      );
 
       router.push(`/checkout?order_id=${orderId}`);
     } catch (err) {
       console.error("Checkout failed:", err);
+      alert("Checkout failed. Please try again.");
     } finally {
-      setLoadingCheckout(false); // PENTING! BIAR TOMBOL BALIK NORMAL
+      setLoadingCheckout(false);
     }
   };
 
@@ -134,7 +164,7 @@ export default function CartSidebar() {
               </div>
 
               <button
-                onClick={checkout}  
+                onClick={checkout}
                 disabled={loadingCheckout || items.length === 0}
                 className="w-full py-4 bg-black text-white font-bold rounded-lg hover:bg-gray-800 disabled:opacity-50"
               >

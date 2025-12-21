@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useCart } from "@/lib/cart-store";
 import type { Product, ProductVariant } from "@/data/products";
 import { useRouter } from "next/navigation";
+import { generateOrderId } from "@/lib/generateOrderId";
 
 type MediaNode =
   | {
@@ -120,14 +121,15 @@ export default function ProductDetail({ product }: { product: Product }) {
     }
 
     try {
-      const now = new Date();
-      const day = String(now.getDate()).padStart(2, "0");
-      const month = String(now.getMonth() + 1).padStart(2, "0");
-      const year = now.getFullYear();
-      const hours = String(now.getHours()).padStart(2, "0");
-      const minutes = String(now.getMinutes()).padStart(2, "0");
-      const seconds = String(now.getSeconds()).padStart(2, "0");
-      const orderId = `ORD-${day}${month}${year}-${hours}${minutes}${seconds}`;
+      // const now = new Date();
+      // const day = String(now.getDate()).padStart(2, "0");
+      // const month = String(now.getMonth() + 1).padStart(2, "0");
+      // const year = now.getFullYear();
+      // const hours = String(now.getHours()).padStart(2, "0");
+      // const minutes = String(now.getMinutes()).padStart(2, "0");
+      // const seconds = String(now.getSeconds()).padStart(2, "0");
+      // const orderId = `ORD-${day}${month}${year}-${hours}${minutes}${seconds}`;
+      const orderId = generateOrderId();
 
       const variantId = selectedVariant?.id || product.id;
       const variantImages = selectedVariant?.images || product.images;

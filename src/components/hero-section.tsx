@@ -38,7 +38,7 @@ export function HeroSection() {
               transition={{ duration: 0.6 }}
               className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6"
             >
-              Produksi Tas & Jersey Custom
+              Custom Bags & Sports Jerseys Production
             </motion.h1>
 
             <motion.p
@@ -47,7 +47,9 @@ export function HeroSection() {
               transition={{ duration: 0.7, delay: 0.1 }}
               className="text-lg md:text-xl text-white/90 mb-8"
             >
-              Jual tas premium & terima custom jersey olahraga. Bisa satuan, tim, komunitas, hingga produksi brand dengan desain eksklusif.
+              We sell premium bags and provide custom sports jersey services.
+              Available for individual orders, teams, communities, and
+              brand-scale production with exclusive designs.
             </motion.p>
 
             {/* CTA */}
@@ -60,12 +62,12 @@ export function HeroSection() {
               <Link href="/products">
                 <Button size="lg" className="text-base px-8 py-6 bg-white text-teal-700 hover:bg-gray-100">
                   <ShoppingBag className="mr-2 h-5 w-5" />
-                  Lihat Produk
+                  View Products
                 </Button>
               </Link>
 
               <a
-                href="https://wa.me/6281289066999?text=Halo%20SolidBrand%2C%20saya%20ingin%20custom%20tas%20atau%20jersey.%20Bisa%20dibantu%20detailnya%3F"
+                href="https://wa.me/6281289066999?text=Hello%20SolidBrand%2C%20I%20would%20like%20to%20custom%20bags%20or%20jerseys.%20Could%20you%20please%20share%20the%20details%3F"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -76,15 +78,14 @@ export function HeroSection() {
                   <Shirt className="mr-2 h-5 w-5" />
                   Custom via WhatsApp
                 </Button>
-
               </a>
             </motion.div>
 
             {/* TRUST BADGES */}
             <div className="flex gap-6 mt-10 text-sm text-white/80">
-              <div>✔ Bisa Custom Desain</div>
-              <div>✔ Bahan Premium</div>
-              <div>✔ Produksi Lokal</div>
+              <div>✔ Custom Design Available</div>
+              <div>✔ Premium Materials</div>
+              <div>✔ Local Production</div>
             </div>
           </div>
 
@@ -102,7 +103,7 @@ export function HeroSection() {
                 >
                   <Image
                     src={images[current]}
-                    alt="Produksi Tas & Jersey Custom"
+                    alt="Custom Bags & Sports Jerseys Production"
                     fill
                     className="object-cover"
                     priority
@@ -117,12 +118,14 @@ export function HeroSection() {
                 <button
                   key={idx}
                   onClick={() => setCurrent(idx)}
-                  className={`h-2.5 rounded-full transition-all ${idx === current ? "w-8 bg-white" : "w-2.5 bg-white/40"
-                    }`}
+                  className={`h-2.5 rounded-full transition-all ${
+                    idx === current ? "w-8 bg-white" : "w-2.5 bg-white/40"
+                  }`}
                 />
               ))}
             </div>
           </div>
+
         </div>
       </div>
     </section>

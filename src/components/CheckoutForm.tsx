@@ -81,11 +81,11 @@ export default function CheckoutForm() {
     { id: "bri_manual", title: "Manual Transfer BRI", icons: ["https://wellborncompany.com/wp-content/plugins/wc-bank-indonesia/img/bri.png"], desc: "Transfer ke BRI. Kami cek manual." },
     { id: "mandiri_manual", title: "Manual Transfer Mandiri", icons: ["https://wellborncompany.com/wp-content/plugins/wc-bank-indonesia/img/mandiri.png"], desc: "Bayar ke Mandiri. Sertakan ID Pesanan." },
     { id: "seabank_manual", title: "Manual Transfer Seabank", icons: ["/icons/seabank.svg"], desc: "Transfer via Seabank. Konfirmasi otomatis." },
-    { id: "qris", title: "QRIS", icons: ["https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/qris.png"], desc: "Scan QRIS: DANA, GoPay, ShopeePay, dll." },
-    { id: "bca_va", title: "BCA Virtual Account", icons: ["https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/bca_va.png"], desc: "Bayar via ATM/mBanking BCA." },
-    { id: "bri_va", title: "BRI Virtual Account", icons: ["https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/bri_va.png"], desc: "Transfer ke BRI VA." },
-    { id: "mandiri_va", title: "Mandiri Virtual Account", icons: ["https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/echannel.png"], desc: "Gunakan VA Mandiri." },
-    { id: "bni_va", title: "BNI Virtual Account", icons: ["https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/bni_va.png"], desc: "Bayar via BNI." },
+    // { id: "qris", title: "QRIS", icons: ["https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/qris.png"], desc: "Scan QRIS: DANA, GoPay, ShopeePay, dll." },
+    // { id: "bca_va", title: "BCA Virtual Account", icons: ["https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/bca_va.png"], desc: "Bayar via ATM/mBanking BCA." },
+    // { id: "bri_va", title: "BRI Virtual Account", icons: ["https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/bri_va.png"], desc: "Transfer ke BRI VA." },
+    // { id: "mandiri_va", title: "Mandiri Virtual Account", icons: ["https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/echannel.png"], desc: "Gunakan VA Mandiri." },
+    // { id: "bni_va", title: "BNI Virtual Account", icons: ["https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/bni_va.png"], desc: "Bayar via BNI." },
     { id: "crypto", title: "Cryptocurrency USDT (TRC20)", icons: ["/icons/usdt.svg"], desc: "TFmZHeEjR9P2jjCp1NhKzXLicwdrAXfCFN" },
     { id: "card", title: "Credit/Debit Card", icons: ["https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/cc_visa.png", "https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/cc_master.png"], desc: "VISA, MasterCard, JCB, Amex." },
   ];
@@ -323,7 +323,7 @@ export default function CheckoutForm() {
     router.push("/order-complete");
   };
 
-  if (loadingOrder) return <div className="text-center py-10">Memuat pesanan...</div>;
+  if (loadingOrder) return <div className="text-center py-10">Loading order...</div>;
   if (orderError) return <div className="text-center py-10 text-red-600">{orderError}</div>;
 
   const handleCopyAddress = async () => {
@@ -515,7 +515,7 @@ export default function CheckoutForm() {
               </div>
             </div>
 
-            <label className="block text-sm font-medium">Berat (gram)</label>
+            <label className="block text-sm font-medium">Weight (grams)</label>
             <input
               type="number"
               value={weight}
@@ -526,7 +526,7 @@ export default function CheckoutForm() {
               Calculated as: <strong>{Math.ceil(weight / 1000)} kg</strong> (rounded up)
             </p>
 
-            {loading && <p className="text-blue-600">Menghitung ongkir JNE...</p>}
+            {loading && <p className="text-blue-600">Calculating JNE shipping cost...</p>}
 
             {shippingCosts.length > 0 && (
               <div className="space-y-2 p-4 bg-blue-50 rounded-lg">
@@ -554,7 +554,7 @@ export default function CheckoutForm() {
 
             {shippingCosts.length === 0 && cityId > 0 && weight > 0 && (
               <p className="text-red-600 p-4 bg-red-50 rounded-lg">
-                Tidak ada layanan JNE untuk berat {weight / 1000}kg. Hubungi admin.
+                No JNE shipping service available for {weight / 1000}kg. Please contact admin.
               </p>
             )}
 
@@ -607,7 +607,8 @@ export default function CheckoutForm() {
             })}
 
             <div className="text-sm text-gray-600 mt-3 pt-3 border-t">
-              Total Berat: <strong>{weight} gram</strong> → dibulatkan jadi <strong>{Math.ceil(weight / 1000)} kg</strong> untuk ongkir
+              Total Weight: <strong>{weight} grams</strong> → rounded up to{" "}
+              <strong>{Math.ceil(weight / 1000)} kg</strong> for shipping calculation
             </div>
 
             {/* Ongkir / Cost Shipping */}

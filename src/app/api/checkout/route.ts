@@ -1,6 +1,7 @@
 // src/app/api/checkout/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { products } from "@/data/products";
+import { generateOrderId } from "@/lib/generateOrderId";
 
 const orders: Record<string, any> = {};
 
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest) {
     const minutes = String(now.getMinutes()).padStart(2, "0");
     const seconds = String(now.getSeconds()).padStart(2, "0");
 
-    const orderId = `ORD-${day}${month}${year}-${hours}${minutes}${seconds}`;
+    const orderId = generateOrderId();
     const enrichedItems = items.map((item: any) => {
       const product = products.find(p => p.id === item.productId);
       const variant = product?.variants?.find(v => v.id === item.variantId);

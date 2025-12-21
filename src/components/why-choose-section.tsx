@@ -16,55 +16,65 @@ import {
 const reasons = [
   {
     icon: Backpack,
-    title: "Sling Bag • Backpack • Travel Bag • Custom Bag Premium",
-    description: "Bahan import, jahitan kuat, desain modern — cocok daily, traveling, atau merchandise tim.",
+    title: "Sling Bags • Backpacks • Travel Bags • Premium Custom Bags",
+    description:
+      "Imported materials, strong stitching, and modern designs — perfect for daily use, traveling, or team merchandise.",
   },
   {
     icon: Shirt,
-    title: "Custom Jersey 100% Bebas Desain",
-    description: "Full print, gradasi, foto tim, logo sponsor — semua bisa! Revisi gratis sampai 100% ACC.",
+    title: "100% Custom Sports Jerseys",
+    description:
+      "Full print, gradients, team photos, sponsor logos — everything is possible! Free revisions until fully approved.",
   },
   {
     icon: Palette,
-    title: "Print Sublimasi Jepang/China Anti Luntur",
-    description: "Warna tetap tajam & gonjreng meski dicuci 100x atau kena matahari & lumpur setiap hari.",
+    title: "Japanese & Chinese Sublimation Printing (Fade Resistant)",
+    description:
+      "Colors stay sharp and vibrant even after 100 washes or daily exposure to sunlight, mud, and tough conditions.",
   },
   {
     icon: Truck,
-    title: "Minimal Order Cuma 12 pcs",
-    description: "Harga sudah all-in: desain + printing + revisi. Cocok buat tim kecil sampai klub pro.",
+    title: "Minimum Order Only 12 Pieces",
+    description:
+      "All-in pricing: design, printing, and revisions included. Ideal for small teams up to professional clubs.",
   },
   {
     icon: Clock,
-    title: "Pengerjaan Super Cepat 3-5 Hari",
-    description: "Desain fix hari ini → 12 pcs dalam waktu 3-5 hari jersey/tas sudah di tangan tim kamu!",
+    title: "Fast Production: 3–5 Days",
+    description:
+      "Design approved today → your 12-piece order is ready within 3–5 days. Fast, efficient, and reliable.",
   },
   {
     icon: ShieldCheck,
-    title: "Garansi 100% Puas + Ganti Baru",
-    description: "Desain salah? Cacat produksi? Kami revisi gratis atau ganti unit baru — no drama.",
+    title: "100% Satisfaction Guarantee",
+    description:
+      "Wrong design or production defect? We revise for free or replace with a new unit — no hassle.",
   },
   {
     icon: FileText,
-    title: "Invoice PDF Otomatis + Profesional",
-    description: "Order langsung dapat invoice resmi PDF cantik, logo SOLID, nomor order, detail barang — siap buat laporan keuangan tim/kantor.",
+    title: "Automatic & Professional PDF Invoice",
+    description:
+      "Every order includes an official PDF invoice with SOLID branding, order number, and item details — ready for accounting and reports.",
     highlight: true,
   },
   {
     icon: MessageCircle,
-    title: "Invoice Langsung Masuk WhatsApp",
-    description: "Cukup klik “Pesan Sekarang” → invoice + link pembayaran langsung terkirim ke WA kamu dalam 5 detik. Praktis banget!",
+    title: "Invoice Sent Instantly via WhatsApp",
+    description:
+      "Just click “Order Now” → invoice and payment link are delivered directly to your WhatsApp within seconds.",
     highlight: true,
   },
   {
     icon: Star,
-    title: "Ratusan Tim & Komunitas Sudah Pakai",
-    description: "Dari klub tarkam, sekolah, kampus, sampai tim esports MPL & atlet nasional — semua percaya SOLID.",
+    title: "Trusted by Hundreds of Teams & Communities",
+    description:
+      "From local clubs and schools to universities, esports teams, and national athletes — all trust SOLID.",
   },
   {
     icon: Users,
-    title: "CS 24/7 via WhatsApp",
-    description: "Tanya bahan, minta mockup, revisi desain, cek status order — langsung balas cepet, ramah, dan sabar!",
+    title: "24/7 Customer Support via WhatsApp",
+    description:
+      "Ask about materials, request mockups, revise designs, or check order status — fast, friendly, and responsive support.",
   },
 ]
 
@@ -74,12 +84,20 @@ export function WhyChooseSection() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12 lg:mb-20">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-            Kenapa Harus
-            <span className="block text-accent text-5xl md:text-6xl lg:text-7xl mt-2">SOLID?</span>
+            Why Choose
+            <span className="block text-accent text-5xl md:text-6xl lg:text-7xl mt-2">
+              SOLID?
+            </span>
           </h2>
+
           <p className="text-xl lg:text-2xl text-gray-600 max-w-5xl mx-auto font-medium">
-            Bukan cuma bikin jersey & tas — kami bikin tim kamu <span className="text-accent font-bold">tampil beda, solid, dan langsung keliatan pro</span> dengan proses termudah di Indonesia!
+            We don’t just produce jerseys and bags — we help your team
+            <span className="text-accent font-bold">
+              {" "}stand out, look solid, and feel professional
+            </span>{" "}
+            with the easiest production process in Indonesia.
           </p>
+
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-8 max-w-7xl mx-auto">
@@ -104,9 +122,9 @@ export function WhyChooseSection() {
                 </CardDescription>
               </CardContent>
               {reason.highlight && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-accent text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg">
-                    FITUR TERBAIK
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+                  <span className="bg-accent text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg whitespace-nowrap">
+                    BEST FEATURE
                   </span>
                 </div>
               )}
