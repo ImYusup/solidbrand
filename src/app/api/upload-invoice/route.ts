@@ -2,7 +2,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { google } from "googleapis";
 import { Readable } from "stream";
-import fs from "fs";
 
 export const runtime = "nodejs";
 
@@ -16,8 +15,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Missing file or orderId" }, { status: 400 });
     }
 
-    const credentials = JSON.parse(fs.readFileSync("credentials.json", "utf-8"));
-    const token = JSON.parse(fs.readFileSync("token.json", "utf-8"));
+    // const credentials = JSON.parse(fs.readFileSync("credentials.json", "utf-8"));
+    // const token = JSON.parse(fs.readFileSync("token.json", "utf-8"));
+    const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON!);
+    const token = JSON.parse(process.env.GOOGLE_TOKEN_JSON!);
     const { client_secret, client_id, redirect_uris } = credentials.installed;
 
     const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
