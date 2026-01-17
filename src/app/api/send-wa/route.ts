@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing WhatsApp credentials" }, { status: 500 });
     }
 
-    const url = `https://graph.facebook.com/v19.0/${PHONE_NUMBER_ID}/messages`;
+    const url = `https://graph.facebook.com/v23.0/${PHONE_NUMBER_ID}/messages`;
 
     // DETEKSI LOKAL
     const isLocal = buyerPhone.startsWith("628") || buyerPhone.startsWith("08");
@@ -109,31 +109,82 @@ Thank you!
       return result;
     };
 
-    const sendDocument = async (to: string, documentUrl: string, filename: string) => {
-      if (!documentUrl) {
+    const sendDocument = async (to: string, pdfUrl: string, orderId: string) => {  // ← tambah parameter orderId di sini
+      if (!pdfUrl) {
         console.log(`No PDF URL, skipping document for ${to}`);
         return { skipped: true };
       }
-      const payload = {
-        messaging_product: "whatsapp",
-        to,
-        type: "document",
-        document: { link: documentUrl, filename },
-      };
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${ACCESS_TOKEN}`, "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const result = await res.json();
-      console.log(`PDF to ${to}:`, result);
-      return result;
+
+      try {
+        // Step 1: Ubah link Drive jadi direct download kalau perlu
+        let directUrl = pdfUrl;
+        if (pdfUrl.includes('drive.google.com')) {
+          const fileIdMatch = pdfUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+          if (fileIdMatch && fileIdMatch[1]) {
+            directUrl = `https://drive.google.com/uc?export=download&id=${fileIdMatch[1]}`;
+          }
+        }
+
+        // Download PDF jadi Buffer
+        const pdfRes = await fetch(directUrl);
+        if (!pdfRes.ok) {
+          throw new Error(`Gagal download PDF dari ${directUrl}: ${pdfRes.status} - ${pdfRes.statusText}`);
+        }
+        const pdfBuffer = await pdfRes.arrayBuffer();
+
+        // Step 2: Upload ke WhatsApp media
+        const formData = new FormData();
+        formData.append('messaging_product', 'whatsapp');
+        formData.append('file', new Blob([pdfBuffer], { type: 'application/pdf' }), `Invoice_${orderId}.pdf`);
+
+        const uploadRes = await fetch(`https://graph.facebook.com/v23.0/${PHONE_NUMBER_ID}/media`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
+          body: formData,
+        });
+
+        const uploadData = await uploadRes.json();
+        if (uploadData.error || !uploadData.id) {
+          throw new Error(`Upload PDF gagal: ${JSON.stringify(uploadData)}`);
+        }
+
+        const mediaId = uploadData.id;
+        console.log(`Media ID berhasil untuk ${to}: ${mediaId}`);
+
+        // Step 3: Kirim document pakai media ID
+        const payload = {
+          messaging_product: "whatsapp",
+          to,
+          type: "document",
+          document: {
+            id: mediaId,
+            caption: `Invoice ${orderId} - SolidBrand\nTotal: Rp ${total.toLocaleString('id-ID')}\nThank You!`,
+            filename: `Invoice_${orderId}.pdf`,
+          },
+        };
+
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${ACCESS_TOKEN}`, "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const result = await res.json();
+        console.log(`PDF to ${to}:`, result);
+        if (result.error) throw new Error(`Kirim PDF gagal: ${JSON.stringify(result.error)}`);
+
+        return result;
+      } catch (err: any) {
+        console.error(`Error kirim PDF ke ${to}:`, err);
+        return { error: err.message };
+      }
     };
 
+    // Panggilan Promise.all — TETAP PAKAI NAMA sendDocument, tapi sekarang kasih orderId
     const [adminRes, buyerTextRes, buyerDocRes] = await Promise.all([
       sendTextMessage(adminPhone, adminMessage),
       sendTextMessage(buyerPhone, buyerMessage),
-      sendDocument(buyerPhone, pdfUrl, `Invoice_${orderId}.pdf`),
+      sendDocument(buyerPhone, pdfUrl, orderId),  // ← ini yang bikin warning hilang (orderId ditambah)
     ]);
 
     console.log("WA SENDING COMPLETE:", { adminRes, buyerTextRes, buyerDocRes });
