@@ -3,9 +3,10 @@ import React from "react";
 
 interface InvoiceProps {
   order: any;
+  paid?: boolean;
 }
 
-export default function InvoiceTemplate({ order }: InvoiceProps) {
+export default function InvoiceTemplate({ order, paid = false }: InvoiceProps) {
   const phone = order?.billing?.phone || "";
   const isLocal = phone.startsWith("08") || phone.startsWith("628");
 
@@ -77,7 +78,7 @@ export default function InvoiceTemplate({ order }: InvoiceProps) {
           userSelect: "none",
         }}
       >
-        UNPAID
+        {paid ? "PAID" : "UNPAID"}
       </div>
 
       <h2 style={{ textAlign: "center", fontSize: 20, marginBottom: 2, fontWeight: "bold" }}>
@@ -208,7 +209,7 @@ export default function InvoiceTemplate({ order }: InvoiceProps) {
       </table>
 
       <p style={{ marginTop: 8, fontSize: 12, color: "#374151" }}>
-        <strong>{t.status}</strong> Belum Dibayar
+        <strong>{t.status}</strong> {paid ? "Dibayar" : "Belum Dibayar"}
       </p>
       <p style={{ marginTop: 8, fontSize: 12, color: "#6b7280" }}>
         Transfer ke: {t.transfer(order.bank)}
