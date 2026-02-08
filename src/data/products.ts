@@ -64,7 +64,6 @@ export const products: Product[] = [
       "/products/minislingbag/minislingbag2.png",
       "/products/minislingbag/minislingbag3.png",
       "/products/minislingbag/minislingbag4.png",
-      "/products/minislingbag/minislingbag5.png"
     ],
     videoUrl:
       "https://drive.google.com/file/d/1rd5YvA3U9T_25K-ZpmV7I_hxjvTSnQhG/preview",
@@ -108,7 +107,6 @@ export const products: Product[] = [
       "/products/urbanslingbag/urbanslingbag2.png",
       "/products/urbanslingbag/urbanslingbag3.png",
       "/products/urbanslingbag/urbanslingbag4.png",
-      "/products/urbanslingbag/urbanslingbag5.png",
     ],
     videoUrl: "https://drive.google.com/file/d/1AGI0rl2g3TsMXqJgF3ZgkFfQx5iAESRx/preview",
   },
@@ -150,7 +148,6 @@ export const products: Product[] = [
       "/products/titanslingbag/titanslingbag3.png",
       "/products/titanslingbag/titanslingbag4.png",
       "/products/titanslingbag/titanslingbag5.png",
-      "/products/titanslingbag/titanslingbag6.png",
     ],
     videoUrl: "https://drive.google.com/file/d/1s4Y_vO2ou0C_xYkM6E_Xl8l_aJn57sUT/preview",
   },
