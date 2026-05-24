@@ -2,6 +2,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
+export const runtime = "nodejs";
+
 export async function POST(req: NextRequest) {
   try {
     const data = await req.json();
@@ -24,64 +26,42 @@ export async function POST(req: NextRequest) {
       pdfUrl,
     } = data;
 
-    const ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
-    const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;
-
-    if (!ACCESS_TOKEN || !PHONE_NUMBER_ID) {
-      return NextResponse.json(
-        { error: "Missing WhatsApp credentials" },
-        { status: 500 }
-      );
-    }
+    const ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN!;
+    const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID!;
 
     const url = `https://graph.facebook.com/v23.0/${PHONE_NUMBER_ID}/messages`;
 
     // =========================
-    // NORMALIZE PHONE
+    // PHONE NORMALIZE
     // =========================
     const normalizePhone = (phone: string) => {
       let clean = phone.replace(/\D/g, "");
-
-      if (clean.startsWith("08")) {
-        clean = "62" + clean.slice(1);
-      }
-
+      if (clean.startsWith("0")) clean = "62" + clean.slice(1);
       return clean;
     };
 
     const buyerWA = normalizePhone(buyerPhone);
     const adminWA = normalizePhone(adminPhone);
 
-    const parseCurrency = (value: any) => {
-      if (!value) return 0;
+    // =========================
+    // DETEKSI REGION
+    // =========================
+    const isLocal = buyerWA.startsWith("62");
 
-      return Number(
-        String(value)
+    // =========================
+    // FORMAT CURRENCY
+    // =========================
+    const formatIDR = (val: any) =>
+      Number(
+        String(val)
           .replace(/Rp/gi, "")
           .replace(/\./g, "")
           .replace(/,/g, "")
           .replace(/\s/g, "")
-          .trim()
       );
-    };
 
-    const totalNumber = parseCurrency(total);
-    const ongkirNumber = parseCurrency(ongkir);
-
-    // =========================
-    // DETEKSI LOCAL / GLOBAL
-    // =========================
-    const isLocal =
-      buyerWA.startsWith("62");
-
-    // =========================
-    // TEMPLATE CONFIG
-    // =========================
-    const templateName = isLocal
-      ? "order_invoice_id"
-      : "order_invoice_eg";
-
-    const languageCode = "en";
+    const totalNumber = formatIDR(total);
+    const ongkirNumber = formatIDR(ongkir);
 
     // =========================
     // ADMIN MESSAGE
@@ -104,62 +84,24 @@ ${pdfUrl}
 `.trim();
 
     // =========================
-    // SEND ADMIN TEXT
+    // BUYER TEMPLATE (SESSION FREE / NEW NUMBER SAFE)
     // =========================
-    const sendTextMessage = async (
-      to: string,
-      message: string
-    ) => {
-      const payload = {
-        messaging_product: "whatsapp",
-        to,
-        type: "text",
-        text: {
-          body: message,
-        },
-      };
-
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${ACCESS_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const result = await res.json();
-
-      console.log(`Text to ${to}:`, result);
-
-      return result;
-    };
-
-    // =========================
-    // SEND BUYER TEMPLATE
-    // =========================
-    const sendTemplateMessage = async () => {
+    const sendBuyerTemplate = async () => {
       const payload = {
         messaging_product: "whatsapp",
         to: buyerWA,
         type: "template",
         template: {
-          name: templateName,
+          name: isLocal ? "order_invoice_id" : "order_invoice_eg",
           language: {
-            code: languageCode,
+            code: isLocal ? "id" : "en",
           },
           components: [
             {
               type: "body",
               parameters: [
-                {
-                  type: "text",
-                  text: customer,
-                },
-                {
-                  type: "text",
-                  text: orderId,
-                },
+                { type: "text", text: customer },
+                { type: "text", text: orderId },
                 {
                   type: "text",
                   text: `Rp ${totalNumber.toLocaleString("id-ID")}`,
@@ -179,235 +121,185 @@ ${pdfUrl}
         body: JSON.stringify(payload),
       });
 
-      const result = await res.json();
-
-      console.log(`Template to ${buyerWA}:`, result);
-
-      if (result.error) {
-        throw new Error(
-          `Template WA gagal: ${JSON.stringify(result.error)}`
-        );
-      }
-
-      return result;
+      return res.json();
     };
 
     // =========================
-    // SEND PDF DOCUMENT
+    // BUYER SESSION MESSAGE (ORDER STATUS)
     // =========================
-    const sendDocument = async (
-      to: string,
-      pdfUrl: string,
-      orderId: string
-    ) => {
-      if (!pdfUrl) {
-        console.log(`No PDF URL, skipping document`);
-        return { skipped: true };
+    const sendBuyerSessionMessage = async () => {
+      const message = isLocal
+        ? `
+Order Berhasil! 
+Invoice otomatis terkirim ke WhatsApp Anda.
+
+Order ID: ${orderId}
+Tanggal: ${orderDate}
+Nama: ${customer}
+WhatsApp: ${wa}
+Produk: ${product}
+Ongkir: ${shipping} (+Rp ${ongkir.toLocaleString("id-ID")})
+Total: Rp ${total.toLocaleString("id-ID")}
+Alamat: ${address}
+Pembayaran: ${bank}
+Status: ${status}
+
+Silakan transfer & kirim bukti ke:
+wa.me/${adminPhone}
+
+Terima kasih! 
+`.trim()
+        : `
+Order Successful! 
+Your invoice has been sent to your WhatsApp.
+
+Order ID: ${orderId}
+Date: ${orderDate}
+Name: ${customer}
+WhatsApp: ${wa}
+Product: ${product}
+Shipping: ${shipping} (+Rp ${ongkir.toLocaleString("id-ID")})
+Total: Rp ${total.toLocaleString("id-ID")}
+Address: ${address}
+Payment: ${bank}
+Status: ${status}
+
+Please transfer and send proof to:
+wa.me/${adminPhone}
+
+Thank you! 
+`.trim();
+
+      return fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${ACCESS_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messaging_product: "whatsapp",
+          to: buyerWA,
+          type: "text",
+          text: { body: message },
+        }),
+      }).then((r) => r.json());
+    };
+
+    // =========================
+    // ADMIN SEND
+    // =========================
+    const sendAdmin = async () => {
+      return fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${ACCESS_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messaging_product: "whatsapp",
+          to: adminWA,
+          type: "text",
+          text: { body: adminMessage },
+        }),
+      }).then((r) => r.json());
+    };
+
+    // =========================
+    // PDF SEND
+    // =========================
+    const sendPDF = async () => {
+      if (!pdfUrl) return { skipped: true };
+
+      let directUrl = pdfUrl;
+
+      if (pdfUrl.includes("drive.google.com")) {
+        const match = pdfUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        const fileId = match?.[1];
+
+        if (fileId) {
+          directUrl = `https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=t`;
+        }
       }
 
-      try {
-        let directUrl = pdfUrl;
+      const pdfRes = await fetch(directUrl);
+      if (!pdfRes.ok) throw new Error("PDF download failed");
 
-        // =========================
-        // GOOGLE DRIVE FIX
-        // =========================
-        if (pdfUrl.includes("drive.google.com")) {
-          let fileId = null;
+      const pdfBuffer = Buffer.from(await pdfRes.arrayBuffer());
 
-          const match1 = pdfUrl.match(
-            /\/d\/([a-zA-Z0-9_-]+)/
-          );
+      const formData = new FormData();
+      formData.append("messaging_product", "whatsapp");
+      formData.append(
+        "file",
+        new File([pdfBuffer], `Invoice_${orderId}.pdf`, {
+          type: "application/pdf",
+        })
+      );
 
-          const match2 = pdfUrl.match(
-            /[?&]id=([a-zA-Z0-9_-]+)/
-          );
-
-          if (match1?.[1]) {
-            fileId = match1[1];
-          } else if (match2?.[1]) {
-            fileId = match2[1];
-          }
-
-          if (!fileId) {
-            throw new Error(
-              `Tidak bisa extract Google Drive file ID`
-            );
-          }
-
-          directUrl =
-            `https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=t`;
-        }
-
-        // =========================
-        // DOWNLOAD PDF
-        // =========================
-        const pdfRes = await fetch(directUrl, {
-          method: "GET",
-          redirect: "follow",
+      const uploadRes = await fetch(
+        `https://graph.facebook.com/v23.0/${PHONE_NUMBER_ID}/media`,
+        {
+          method: "POST",
           headers: {
-            "User-Agent": "Mozilla/5.0",
+            Authorization: `Bearer ${ACCESS_TOKEN}`,
           },
-        });
-
-        if (!pdfRes.ok) {
-          throw new Error(
-            `Gagal download PDF: ${pdfRes.status}`
-          );
+          body: formData,
         }
+      );
 
-        console.log("DIRECT URL:", directUrl);
-        console.log("PDF STATUS:", pdfRes.status);
-        console.log(
-          "CONTENT TYPE:",
-          pdfRes.headers.get("content-type")
-        );
+      const uploadData = await uploadRes.json();
 
-        const pdfBuffer = await pdfRes.arrayBuffer();
+      if (!uploadData.id) {
+        throw new Error(JSON.stringify(uploadData));
+      }
 
-        // =========================
-        // UPLOAD MEDIA META
-        // =========================
-        const formData = new FormData();
+      const mediaId = uploadData.id;
 
-        formData.append(
-          "messaging_product",
-          "whatsapp"
-        );
-
-        formData.append(
-          "file",
-          new Blob([pdfBuffer], {
-            type: "application/pdf",
-          }),
-          `Invoice_${orderId}.pdf`
-        );
-
-        const uploadRes = await fetch(
-          `https://graph.facebook.com/v23.0/${PHONE_NUMBER_ID}/media`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${ACCESS_TOKEN}`,
-            },
-            body: formData,
-          }
-        );
-
-        const uploadData = await uploadRes.json();
-
-        if (uploadData.error || !uploadData.id) {
-          throw new Error(
-            `Upload PDF gagal: ${JSON.stringify(uploadData)}`
-          );
-        }
-
-        const mediaId = uploadData.id;
-
-        console.log(
-          `Media ID berhasil untuk ${to}:`,
-          mediaId
-        );
-
-        // =========================
-        // SEND DOCUMENT
-        // =========================
-        const payload = {
+      return fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${ACCESS_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           messaging_product: "whatsapp",
-          to,
+          to: buyerWA,
           type: "document",
           document: {
             id: mediaId,
             filename: `Invoice_${orderId}.pdf`,
-            caption:
-              `Invoice ${orderId}\n` +
-              `Total: Rp ${totalNumber.toLocaleString("id-ID")}\n\n` +
-              `Thank you!\nSolidBrand`,
+            caption: `Invoice ${orderId}\nTotal: Rp ${totalNumber.toLocaleString("id-ID")}\nThank You!`,
           },
-        };
-
-        const res = await fetch(url, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${ACCESS_TOKEN}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        });
-
-        const result = await res.json();
-
-        console.log(`PDF to ${to}:`, result);
-
-        if (result.error) {
-          throw new Error(
-            `Kirim PDF gagal: ${JSON.stringify(result.error)}`
-          );
-        }
-
-        return result;
-      } catch (err: any) {
-        console.error(
-          `Error kirim PDF ke ${to}:`,
-          err
-        );
-
-        return {
-          error: err.message,
-        };
-      }
+        }),
+      }).then((r) => r.json());
     };
 
     // =========================
-    // EXECUTION FLOW
+    // FLOW FINAL
     // =========================
 
-    // 1. ADMIN
-    const adminRes = await sendTextMessage(
-      adminWA,
-      adminMessage
-    );
+    const adminRes = await sendAdmin();
 
-    // 2. BUYER TEMPLATE
-    const buyerTemplateRes =
-      await sendTemplateMessage();
+    const templateRes = await sendBuyerTemplate();
 
-    // 3. DELAY
-    await new Promise((resolve) =>
-      setTimeout(resolve, 2000)
-    );
+    await new Promise((r) => setTimeout(r, 1500));
 
-    // 4. BUYER PDF
-    const buyerDocRes = await sendDocument(
-      buyerWA,
-      pdfUrl,
-      orderId
-    );
+    const sessionRes = await sendBuyerSessionMessage();
 
-    console.log("WA SENDING COMPLETE:", {
-      adminRes,
-      buyerTemplateRes,
-      buyerDocRes,
-    });
+    await new Promise((r) => setTimeout(r, 1500));
+
+    const pdfRes = await sendPDF();
 
     return NextResponse.json({
       success: true,
-      message:
-        "WA template & PDF sent successfully",
       adminRes,
-      buyerTemplateRes,
-      buyerDocRes,
-      pdfUrl,
+      templateRes,
+      sessionRes,
+      pdfRes,
     });
   } catch (err: any) {
-    console.error("send-wa error:", err);
-
     return NextResponse.json(
-      {
-        error: err.message,
-      },
-      {
-        status: 500,
-      }
+      { error: err.message },
+      { status: 500 }
     );
   }
 }
