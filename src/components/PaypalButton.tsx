@@ -10,7 +10,7 @@ interface PaypalButtonProps {
 }
 
 export default function PaypalButton({ amount, orderData, onPaid }: PaypalButtonProps) {
-  const rate = 16000;
+  const rate = 10000;
   const valueUSD = (amount / rate).toFixed(2);
 
   return (

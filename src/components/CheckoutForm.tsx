@@ -71,8 +71,8 @@ export default function CheckoutForm() {
 
   const bankInfo: Record<string, { bank: string; account: string; name: string }> = {
     bca_manual: { bank: "BCA", account: "7390 7480 13", name: "Yusup Juniadi" },
-    bri_manual: { bank: "BRI", account: "7463 0100 7264 505", name: "Yusup Juniadi" },
-    mandiri_manual: { bank: "Mandiri", account: "1560016268064", name: "Yusup Juniadi" },
+    bri_manual: { bank: "BRI", account: "2058 0100 4408 532", name: "Yusup Juniadi" },
+    mandiri_manual: { bank: "Mandiri", account: "1560 0162 68064", name: "Yusup Juniadi" },
     seabank_manual: { bank: "Sea Bank", account: "9013 5607 9886", name: "Yusup Juniadi" },
   };
 
@@ -86,7 +86,7 @@ export default function CheckoutForm() {
     // { id: "bri_va", title: "BRI Virtual Account", icons: ["https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/bri_va.png"], desc: "Transfer ke BRI VA." },
     // { id: "mandiri_va", title: "Mandiri Virtual Account", icons: ["https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/echannel.png"], desc: "Gunakan VA Mandiri." },
     // { id: "bni_va", title: "BNI Virtual Account", icons: ["https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/bni_va.png"], desc: "Bayar via BNI." },
-    { id: "crypto", title: "Cryptocurrency USDT (TRC20)", icons: ["/icons/usdt.svg"], desc: "TFmZHeEjR9P2jjCp1NhKzXLicwdrAXfCFN" },
+    { id: "crypto", title: "Cryptocurrency USDT TRON (TRC20)", icons: ["/icons/usdt.svg"], desc: "TFmZHeEjR9P2jjCp1NhKzXLicwdrAXfCFN" },
     { id: "card", title: "Credit/Debit Card", icons: ["https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/cc_visa.png", "https://wellborncompany.com/wp-content/plugins/midtrans-woocommerce/public/images/payment-methods/cc_master.png"], desc: "VISA, MasterCard, JCB, Amex." },
   ];
 
@@ -661,7 +661,7 @@ export default function CheckoutForm() {
                     {selectedPayment === method.id && method.id === "crypto" && (
                       <div className="mt-3 space-y-3 p-4 bg-gray-100 border rounded-lg">
                         {/* TITLE */}
-                        <p className="font-semibold text-gray-800">USDT (TRC20) Wallet Address</p>
+                        <p className="font-semibold text-gray-800">USDT TRON (TRC20) Wallet Address</p>
 
                         {/* QR CODE */}
                         <div className="flex justify-center">
@@ -693,10 +693,10 @@ export default function CheckoutForm() {
                         {/* WARNING */}
                         <div className="bg-red-50 border border-red-200 rounded p-2">
                           <p className="text-xs text-red-700">
-                            <strong>⚠️ WARNING:</strong> Only send on <b>TRC20 network (USDT)</b>. Wrong network = funds lost forever.
+                            <strong>⚠️ WARNING:</strong> Only send on <b>TRON TRC20 network (USDT)</b>. Wrong network = funds lost forever.
                           </p>
                           <p className="text-xs text-red-700 mt-1">
-                            Exact amount: <strong>Rp {total.toLocaleString()}</strong> ≈ <strong>${(total / 16000).toFixed(2)} USDT</strong>
+                            Exact amount: <strong>Rp {total.toLocaleString()}</strong> ≈ <strong>${(total / 10000).toFixed(2)} USDT</strong>
                           </p>
                         </div>
 
@@ -705,7 +705,7 @@ export default function CheckoutForm() {
                           <p><strong>Steps:</strong></p>
                           <ol className="list-decimal list-inside space-y-1">
                             <li>Copy wallet address or scan QR code</li>
-                            <li>Open your TRC20 wallet (Trust Wallet, Binance, etc.)</li>
+                            <li>Open your TRON TRC20 wallet (Bybit, OKX, Binance, etc.)</li>
                             <li>Send exact amount: Rp {total.toLocaleString()}</li>
                             <li>Include Order ID: <strong>{orderId}</strong> in memo</li>
                             <li>Confirmation will be processed within 30 minutes</li>
