@@ -45,8 +45,8 @@ export async function POST(req: NextRequest) {
     const isLocal = buyerWA.startsWith("62");
 
     const templateName = isLocal ? "invoice_order_xx" : "invoice_order_en";
-    const languageCode = "en"; // keduanya pakai English di Meta
-
+    const languageCode =
+      "en";
     const formatIDR = (val: any) => {
       const num = Number(String(val || 0).replace(/Rp/gi, "").replace(/[^0-9]/g, ""));
       return isNaN(num) ? 0 : num;
@@ -141,71 +141,228 @@ ${pdfUrl}`,
     const sendAdminTemplate = async () => {
       const payload = {
         messaging_product: "whatsapp",
+
         to: adminWA,
+
         type: "template",
+
         template: {
           name: "admin_new_order",
-          language: { code: "en" },
-          components: [{
-            type: "body",
-            parameters: [
-              { type: "text", text: orderId },
-              { type: "text", text: orderDate },
-              { type: "text", text: customer },
-              { type: "text", text: product },
-              { type: "text", text: totalNumber.toLocaleString("id-ID") },
-              { type: "text", text: address },
-              { type: "text", text: status },
-              { type: "text", text: waForLink },
-            ]
-          }]
-        }
+
+          language: {
+            code: "en",
+          },
+
+          components: [
+            {
+              type: "body",
+
+              parameters: [
+                { type: "text", text: orderId || "-" },
+                { type: "text", text: orderDate || "-" },
+                { type: "text", text: customer || "-" },
+                { type: "text", text: product || "-" },
+                {
+                  type: "text",
+                  text: String(totalNumber || 0),
+                },
+                { type: "text", text: address || "-" },
+                { type: "text", text: status || "-" },
+                { type: "text", text: waForLink || "-" },
+              ],
+            },
+          ],
+        },
       };
+
+      console.log("=== ADMIN PAYLOAD ===");
+      console.log(JSON.stringify(payload, null, 2));
 
       const res = await fetch(url, {
         method: "POST",
-        headers: { Authorization: `Bearer ${ACCESS_TOKEN}`, "Content-Type": "application/json" },
+
+        headers: {
+          Authorization: `Bearer ${ACCESS_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+
         body: JSON.stringify(payload),
       });
+
       const result = await res.json();
-      console.log("ADMIN TEMPLATE RESULT:", result);
+
+      console.log("MESSAGE ID:", result?.messages?.[0]?.id);
+
+      if (
+        result?.messages?.[0]?.id
+      ) {
+
+        console.log(
+          "WAIT DELIVERY VIA WEBHOOK"
+        );
+
+      }
+
+      console.log("=== ADMIN RESPONSE ===");
+      console.log(JSON.stringify(result, null, 2));
+
+      if (!res.ok || result?.error) {
+        throw new Error(
+          result?.error?.message ||
+          "ADMIN_TEMPLATE_FAILED"
+        );
+      }
+
+      if (!result?.messages?.length) {
+        throw new Error(
+          "ADMIN_MESSAGE_NOT_ACCEPTED"
+        );
+      }
+
+      console.log(
+        "ADMIN MESSAGE:",
+        result.messages[0].id
+      );
+
+      console.log(
+        "ADMIN STATUS:",
+        result.messages[0].message_status
+      );
+
       return result;
     };
+
 
     // =========================
     // BUYER TEMPLATE
     // =========================
     const sendBuyerTemplate = async () => {
+
+      await new Promise(
+        r => setTimeout(r, 1500)
+      );
+
       const payload = {
         messaging_product: "whatsapp",
+
         to: buyerWA,
+
         type: "template",
+
         template: {
           name: templateName,
-          language: { code: languageCode },
-          components: [{
-            type: "body",
-            parameters: [
-              { type: "text", text: customer },
-              { type: "text", text: orderId },
-              { type: "text", text: orderDate },
-              { type: "text", text: customer },
-              { type: "text", text: product },
-              { type: "text", text: totalNumber.toLocaleString("id-ID") },
-              { type: "text", text: address },
-              { type: "text", text: status },
-            ]
-          }]
-        }
+
+          language: {
+            code: "en",
+          },
+
+          components: [
+            {
+              type: "body",
+
+              parameters: [
+
+                {
+                  type: "text",
+                  text: customer || "-",
+                },
+
+                {
+                  type: "text",
+                  text: orderId || "-",
+                },
+
+                {
+                  type: "text",
+                  text: orderDate || "-",
+                },
+
+                {
+                  type: "text",
+                  text: customer || "-",
+                },
+
+                {
+                  type: "text",
+                  text: product || "-",
+                },
+
+                {
+                  type: "text",
+                  text: String(
+                    totalNumber || 0
+                  ),
+                },
+
+                {
+                  type: "text",
+                  text: address || "-",
+                },
+
+                {
+                  type: "text",
+                  text: status || "-",
+                },
+              ],
+            },
+          ],
+        },
       };
+
+      console.log("=== BUYER PAYLOAD ===");
+      console.log(JSON.stringify(payload, null, 2));
 
       const res = await fetch(url, {
         method: "POST",
-        headers: { Authorization: `Bearer ${ACCESS_TOKEN}`, "Content-Type": "application/json" },
+
+        headers: {
+          Authorization: `Bearer ${ACCESS_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+
         body: JSON.stringify(payload),
       });
+
       const result = await res.json();
-      console.log(`BUYER TEMPLATE (${isLocal ? 'LOCAL' : 'INTERNATIONAL'}) RESULT:`, result);
+
+      console.log("MESSAGE ID:", result?.messages?.[0]?.id);
+
+      if (
+        result?.messages?.[0]?.id
+      ) {
+
+        console.log(
+          "WAIT DELIVERY VIA WEBHOOK"
+        );
+
+      }
+
+      console.log("=== BUYER RESPONSE ===");
+      console.log(JSON.stringify(result, null, 2));
+
+      if (!res.ok || result?.error) {
+        throw new Error(
+          result?.error?.message ||
+          "BUYER_TEMPLATE_FAILED"
+        );
+      }
+
+      if (!result?.messages?.length) {
+        throw new Error(
+          "BUYER_MESSAGE_NOT_ACCEPTED"
+        );
+      }
+
+      console.log(
+        "BUYER MESSAGE:",
+        result.messages[0].id
+      );
+
+      console.log(
+        "BUYER STATUS:",
+        result.messages[0].message_status
+      );
+
       return result;
     };
 
@@ -361,40 +518,43 @@ ${pdfUrl}`,
     // FINAL FLOW
     // =========================
 
-    console.log(
-      "🚀 Starting WA flow"
-    );
+    console.log("🚀 Starting WA flow");
 
-    await sendAdminTemplate();
-
-    if (pdfUrl) {
-      await new Promise(
-        r =>
-          setTimeout(
-            r,
-            1500
-          )
-      );
-
-      await sendTextMessage(
-        adminWA,
-
-        `📎 Invoice Order ${orderId}
-${pdfUrl}`
-      );
-    }
-
-    await sendBuyerTemplate();
-
-    await new Promise(
-      r =>
-        setTimeout(
-          r,
-          12000
-        )
-    );
+    const sendPdf =
+      data.sendPdf === true;
 
     let pdfResult = null;
+
+    // =========================
+    // STEP 1
+    // ORDER BARU
+    // =========================
+
+    if (!sendPdf) {
+
+      await sendAdminTemplate();
+
+      if (pdfUrl) {
+        await sendTextMessage(
+          adminWA,
+          `📎 Invoice Order ${orderId}\n${pdfUrl}`
+        );
+      }
+
+      await sendBuyerTemplate();
+
+      return NextResponse.json({
+        success: true,
+        waitingBuyerClick: true,
+        pdfSent: false,
+      });
+
+    }
+
+    // =========================
+    // STEP 2
+    // BUYER CLICK BUTTON
+    // =========================
 
     try {
 
@@ -433,10 +593,12 @@ ${pdfUrl}`
           )
         );
       }
+
     }
 
     return NextResponse.json({
       success: true,
+      waitingBuyerClick: false,
       pdfSent: !!pdfResult,
     });
 

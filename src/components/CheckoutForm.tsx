@@ -696,7 +696,7 @@ export default function CheckoutForm() {
                             <strong>⚠️ WARNING:</strong> Only send on <b>TRON TRC20 network (USDT)</b>. Wrong network = funds lost forever.
                           </p>
                           <p className="text-xs text-red-700 mt-1">
-                            Exact amount: <strong>Rp {total.toLocaleString()}</strong> ≈ <strong>${(total / 10000).toFixed(2)} USDT</strong>
+                            Exact amount: <strong>${(total / 10000).toFixed(2)} USDT</strong>
                           </p>
                         </div>
 
@@ -706,7 +706,6 @@ export default function CheckoutForm() {
                           <ol className="list-decimal list-inside space-y-1">
                             <li>Copy wallet address or scan QR code</li>
                             <li>Open your TRON TRC20 wallet (Bybit, OKX, Binance, etc.)</li>
-                            <li>Send exact amount: Rp {total.toLocaleString()}</li>
                             <li>Include Order ID: <strong>{orderId}</strong> in memo</li>
                             <li>Confirmation will be processed within 30 minutes</li>
                           </ol>
