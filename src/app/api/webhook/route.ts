@@ -38,60 +38,260 @@ export async function GET(req: NextRequest) {
  *  ✅ HANDLE INCOMING WEBHOOK (POST)
  * =========================================================
  */
-export async function POST(req: NextRequest) {
+export async function POST(
+  req: NextRequest
+) {
   try {
-    const body = await req.json();
-    console.log("📩 Incoming webhook:", JSON.stringify(body, null, 2));
 
-    const entry = body.entry?.[0];
-    const change = entry?.changes?.[0];
-    const messages = change?.value?.messages?.[0];
+    const body =
+      await req.json();
 
-    if (!messages) {
-      console.log("⚠️ No message found in payload");
-      return NextResponse.json({ status: "no_message" });
+    console.log(
+      "📩 WEBHOOK:"
+    );
+
+    console.log(
+      JSON.stringify(
+        body,
+        null,
+        2
+      )
+    );
+
+    const value =
+      body
+        ?.entry?.[0]
+        ?.changes?.[0]
+        ?.value;
+
+    if (!value) {
+      return NextResponse.json({
+        ok: true,
+      });
     }
 
-    const from = messages.from;
-    const type = messages.type;
+    // ==================
+    // DELIVERY STATUS
+    // ==================
 
-    // ================================
-    //  📨 Text Message Received
-    // ================================
-    if (type === "text") {
-      const text = messages.text?.body;
-      console.log(`💬 TEXT FROM ${from}:`, text);
+    if (
+      value?.statuses?.length
+    ) {
 
-      // 🔥 SEND AUTO REPLY
-      const reply = await fetch(
-        `https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`,
+      const s =
+        value.statuses[0];
+
+      console.log(
+        "STATUS:",
+        s.status
+      );
+
+      console.log(
+        "MESSAGE:",
+        s.id
+      );
+
+      console.log(
+        "ERROR:",
+        s.errors
+      );
+
+      return NextResponse.json({
+        ok: true,
+      });
+
+    }
+
+    const msg =
+      value
+        ?.messages?.[0];
+
+    if (!msg) {
+
+      return NextResponse.json({
+        ok: true,
+      });
+
+    }
+
+    const from =
+      msg.from;
+
+    const type =
+      msg.type;
+
+    // ==================
+    // BUTTON CLICK
+    // ==================
+
+    let button =
+      "";
+
+    let payload =
+      "";
+
+    if (
+      msg?.button
+    ) {
+
+      button =
+        msg.button.text;
+
+      payload =
+        msg.button.payload;
+
+    }
+
+    if (
+      msg
+        ?.interactive
+        ?.button_reply
+    ) {
+
+      button =
+        msg
+          .interactive
+          .button_reply
+          .title;
+
+      payload =
+        msg
+          .interactive
+          .button_reply
+          .id;
+
+    }
+
+    if (
+      button ===
+      "Invoice PDF"
+    ) {
+
+      const clean =
+        payload
+          .replace(
+            "invoice:",
+            ""
+          );
+
+      const [
+        orderId,
+        ...rest
+      ] =
+        clean.split(
+          "|"
+        );
+
+      const pdfUrl =
+        rest.join(
+          "|"
+        );
+
+      console.log(
+        "SEND PDF:",
+        orderId
+      );
+
+      await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/send-wa`,
         {
-          method: "POST",
+          method:
+            "POST",
+
           headers: {
-            Authorization: `Bearer ${ACCESS_TOKEN}`,
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
           },
-          body: JSON.stringify({
-            messaging_product: "whatsapp",
-            to: from,
-            type: "text",
-            text: {
-              body: `Halo! Terima kasih sudah menghubungi kami 🙌\nPesanmu: "${text}"`,
-            },
-          }),
+
+          body:
+            JSON.stringify(
+              {
+                buyerPhone:
+                  from,
+
+                adminPhone:
+                  "6281289066999",
+
+                orderId,
+
+                orderDate:
+                  "-",
+
+                customer:
+                  "-",
+
+                wa:
+                  from,
+
+                product:
+                  "-",
+
+                total:
+                  "0",
+
+                address:
+                  "-",
+
+                status:
+                  "-",
+
+                pdfUrl,
+
+                sendPdf:
+                  true,
+              }
+            ),
         }
       );
 
-      const replyResult = await reply.json();
-      console.log("📤 Reply sent:", replyResult);
+      return NextResponse.json({
+        ok: true,
+        pdfTriggered:
+          true,
+      });
+
     }
 
-    return NextResponse.json({ status: "ok" });
-  } catch (err) {
-    console.error("🔥 POST webhook error:", err);
-    return NextResponse.json(
-      { status: "error", message: String(err) },
-      { status: 500 }
-    );
+    // ==================
+    // TEXT MESSAGE
+    // ==================
+
+    if (
+      type ===
+      "text"
+    ) {
+
+      console.log(
+        "TEXT:",
+        msg.text?.body
+      );
+
+    }
+
+    return NextResponse.json({
+      ok: true,
+    });
+
   }
+
+  catch (
+  err
+  ) {
+
+    console.error(
+      err
+    );
+
+    return NextResponse.json(
+      {
+        ok: false,
+      },
+      {
+        status:
+          500,
+      }
+    );
+
+  }
+
 }
