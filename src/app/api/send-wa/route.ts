@@ -20,11 +20,25 @@ export async function POST(req: NextRequest) {
       pdfUrl,
     } = data;
 
-    const ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN!;
-    const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID!;
+    const ACCESS_TOKEN =
+      process.env.WHATSAPP_ACCESS_TOKEN;
 
-    if (!ACCESS_TOKEN || !PHONE_NUMBER_ID) {
-      return NextResponse.json({ error: "Missing WhatsApp credentials" }, { status: 500 });
+    const PHONE_NUMBER_ID =
+      process.env.PHONE_NUMBER_ID;
+
+    if (
+      !ACCESS_TOKEN ||
+      !PHONE_NUMBER_ID
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Missing WhatsApp credentials",
+        },
+        {
+          status: 500,
+        }
+      );
     }
 
     const url = `https://graph.facebook.com/v23.0/${PHONE_NUMBER_ID}/messages`;
@@ -44,9 +58,40 @@ export async function POST(req: NextRequest) {
     // =========================
     const isLocal = buyerWA.startsWith("62");
 
-    const templateName = isLocal ? "invoice_order_xx" : "invoice_order_en";
-    const languageCode =
-      "en";
+    // =========================
+    // TEMPLATE CONFIG
+    // =========================
+
+    const ADMIN_TEMPLATE = {
+      name: "admin_new_order",
+      language: "en",
+    };
+
+    const BUYER_TEMPLATE = {
+      local: {
+        name: "invoice_order_xx",
+        language: "en", // ← sesuaikan sama bahasa template di Meta
+      },
+
+      intl: {
+        name: "invoice_order_en",
+        language: "en_US",
+      },
+    };
+
+    const templateName =
+      isLocal
+        ? BUYER_TEMPLATE.local.name
+        : BUYER_TEMPLATE.intl.name;
+
+    const buyerLanguage =
+      isLocal
+        ? BUYER_TEMPLATE.local.language
+        : BUYER_TEMPLATE.intl.language;
+
+    const adminLanguage =
+      ADMIN_TEMPLATE.language;
+
     const formatIDR = (val: any) => {
       const num = Number(String(val || 0).replace(/Rp/gi, "").replace(/[^0-9]/g, ""));
       return isNaN(num) ? 0 : num;
@@ -147,10 +192,10 @@ ${pdfUrl}`,
         type: "template",
 
         template: {
-          name: "admin_new_order",
+          name: ADMIN_TEMPLATE.name,
 
           language: {
-            code: "en",
+            code: adminLanguage,
           },
 
           components: [
@@ -177,6 +222,12 @@ ${pdfUrl}`,
 
       console.log("=== ADMIN PAYLOAD ===");
       console.log(JSON.stringify(payload, null, 2));
+
+      console.log(
+        "ADMIN:",
+        payload.template.name,
+        payload.template.language.code
+      );
 
       const res = await fetch(url, {
         method: "POST",
@@ -253,7 +304,7 @@ ${pdfUrl}`,
           name: templateName,
 
           language: {
-            code: "en",
+            code: buyerLanguage,
           },
 
           components: [
@@ -311,6 +362,12 @@ ${pdfUrl}`,
 
       console.log("=== BUYER PAYLOAD ===");
       console.log(JSON.stringify(payload, null, 2));
+
+      console.log(
+        "BUYER:",
+        payload.template.name,
+        payload.template.language.code
+      );
 
       const res = await fetch(url, {
         method: "POST",
@@ -532,14 +589,28 @@ ${pdfUrl}`,
 
     if (!sendPdf) {
 
+      console.log(
+        "📨 SEND TEMPLATE → ADMIN"
+      );
+
       await sendAdminTemplate();
 
       if (pdfUrl) {
+
+        console.log(
+          "📎 SEND PDF LINK → ADMIN"
+        );
+
         await sendTextMessage(
           adminWA,
           `📎 Invoice Order ${orderId}\n${pdfUrl}`
         );
+
       }
+
+      console.log(
+        "📨 SEND TEMPLATE → BUYER"
+      );
 
       await sendBuyerTemplate();
 
@@ -556,6 +627,10 @@ ${pdfUrl}`,
     // BUYER CLICK BUTTON
     // =========================
 
+    console.log(
+      "📄 PDF REQUEST MODE"
+    );
+
     try {
 
       pdfResult =
@@ -570,6 +645,7 @@ ${pdfUrl}`,
     ) {
 
       console.error(
+        "❌ PDF ERROR:",
         err
       );
 
@@ -592,6 +668,7 @@ ${pdfUrl}`,
             pdfUrl
           )
         );
+
       }
 
     }

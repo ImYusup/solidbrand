@@ -12,24 +12,78 @@ const VERIFY_TOKEN = process.env.VERIFY_TOKEN!;
  */
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
 
-    const mode = searchParams.get("hub.mode");
-    const token = searchParams.get("hub.verify_token");
-    const challenge = searchParams.get("hub.challenge");
+    const { searchParams } =
+      new URL(req.url);
 
-    console.log("🔍 WEBHOOK VERIFY REQUEST:", { mode, token, challenge });
+    const mode =
+      searchParams.get("hub.mode");
 
-    if (mode === "subscribe" && token === VERIFY_TOKEN) {
-      console.log("✅ WEBHOOK VERIFIED SUCCESS");
-      return new Response(challenge, { status: 200 });
+    const token =
+      searchParams.get(
+        "hub.verify_token"
+      );
+
+    const challenge =
+      searchParams.get(
+        "hub.challenge"
+      );
+
+    console.log("======== VERIFY ========");
+
+    console.log({
+      mode,
+      token,
+      challenge,
+      ENV_VERIFY:
+        process.env.VERIFY_TOKEN
+    });
+
+    console.log(
+      "MATCH:",
+      token === process.env.VERIFY_TOKEN
+    );
+
+    if (
+      mode === "subscribe" &&
+      token === process.env.VERIFY_TOKEN
+    ) {
+
+      console.log(
+        "✅ VERIFIED"
+      );
+
+      return new Response(
+        challenge,
+        {
+          status: 200,
+        }
+      );
+
     }
 
-    console.warn("❌ WEBHOOK VERIFICATION FAILED");
-    return new Response("Verification failed", { status: 403 });
-  } catch (err) {
-    console.error("🔥 GET webhook error:", err);
-    return new Response("Internal Server Error", { status: 500 });
+    console.log(
+      "❌ INVALID"
+    );
+
+    return new Response(
+      "Verification failed",
+      {
+        status: 403,
+      }
+    );
+
+  } catch (e) {
+
+    console.error(e);
+
+    return new Response(
+      "ERROR",
+      {
+        status: 500,
+      }
+    );
+
   }
 }
 
@@ -43,11 +97,15 @@ export async function POST(
 ) {
   try {
 
+    console.log(
+      "🔥 WEBHOOK HIT"
+    );
+
     const body =
       await req.json();
 
     console.log(
-      "📩 WEBHOOK:"
+      "🔥 BODY RECEIVED"
     );
 
     console.log(
@@ -74,12 +132,18 @@ export async function POST(
     // DELIVERY STATUS
     // ==================
 
-    if (
-      value?.statuses?.length
-    ) {
+    if (value?.statuses?.length) {
 
       const s =
         value.statuses[0];
+
+      console.log(
+        "\n========================"
+      );
+
+      console.log(
+        "📦 DELIVERY UPDATE"
+      );
 
       console.log(
         "STATUS:",
@@ -87,13 +151,101 @@ export async function POST(
       );
 
       console.log(
-        "MESSAGE:",
+        "MESSAGE ID:",
         s.id
       );
 
       console.log(
-        "ERROR:",
-        s.errors
+        "RECIPIENT:",
+        s.recipient_id
+      );
+
+      console.log(
+        "TIMESTAMP:",
+        s.timestamp
+      );
+
+      console.log(
+        "CONVERSATION:",
+        s?.conversation?.id
+      );
+
+      console.log(
+        "CATEGORY:",
+        s?.conversation
+          ?.origin
+          ?.type
+      );
+
+      console.log(
+        "PRICING:",
+        s?.pricing
+      );
+
+      if (
+        s.errors?.length
+      ) {
+
+        console.log(
+          "❌ ERRORS:"
+        );
+
+        console.log(
+          JSON.stringify(
+            s.errors,
+            null,
+            2
+          )
+        );
+
+      }
+
+      if (
+        s.status ===
+        "failed"
+      ) {
+
+        console.log(
+          "🚨 MESSAGE FAILED"
+        );
+
+      }
+
+      if (
+        s.status ===
+        "sent"
+      ) {
+
+        console.log(
+          "📤 SENT TO WHATSAPP"
+        );
+
+      }
+
+      if (
+        s.status ===
+        "delivered"
+      ) {
+
+        console.log(
+          "✅ DELIVERED"
+        );
+
+      }
+
+      if (
+        s.status ===
+        "read"
+      ) {
+
+        console.log(
+          "👀 READ"
+        );
+
+      }
+
+      console.log(
+        "========================\n"
       );
 
       return NextResponse.json({
