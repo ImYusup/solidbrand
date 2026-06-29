@@ -18,18 +18,17 @@ export async function GET(req: NextRequest) {
     const token = searchParams.get("hub.verify_token");
     const challenge = searchParams.get("hub.challenge");
 
-    console.log("🔍 WEBHOOK VERIFY REQUEST:", { mode, token, challenge });
+    console.log("🔍 WEBHOOK VERIFY:", { mode, token });
 
     if (mode === "subscribe" && token === VERIFY_TOKEN) {
       console.log("✅ WEBHOOK VERIFIED SUCCESS");
       return new Response(challenge, { status: 200 });
     }
 
-    console.warn("❌ WEBHOOK VERIFICATION FAILED");
     return new Response("Verification failed", { status: 403 });
   } catch (err) {
-    console.error("🔥 GET webhook error:", err);
-    return new Response("Internal Server Error", { status: 500 });
+    console.error("GET webhook error:", err);
+    return new Response("Error", { status: 500 });
   }
 }
 
@@ -41,57 +40,78 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    console.log("📩 Incoming webhook:", JSON.stringify(body, null, 2));
+    console.log("📩 WEBHOOK RECEIVED");
 
-    const entry = body.entry?.[0];
-    const change = entry?.changes?.[0];
-    const messages = change?.value?.messages?.[0];
+    const value = body?.entry?.[0]?.changes?.[0]?.value;
 
-    if (!messages) {
-      console.log("⚠️ No message found in payload");
-      return NextResponse.json({ status: "no_message" });
+    if (!value) {
+      return NextResponse.json({ ok: true });
     }
 
-    const from = messages.from;
-    const type = messages.type;
+    // === 1. DELIVERY STATUS ===
+    if (value?.statuses?.length) {
+      const s = value.statuses[0];
+      console.log(`📦 STATUS: ${s.status} | Recipient: ${s.recipient_id}`);
+      if (s.errors?.length) {
+        console.error("❌ ERROR:", JSON.stringify(s.errors, null, 2));
+      }
+      return NextResponse.json({ ok: true });
+    }
 
-    // ================================
-    //  📨 Text Message Received
-    // ================================
+    const msg = value?.messages?.[0];
+    if (!msg) return NextResponse.json({ ok: true });
+
+    const from = msg.from;
+    const type = msg.type;
+
+    // === 2. HANDLE BUTTON CLICK (Invoice PDF) ===
+    let buttonTitle = "";
+    let payload = "";
+
+    if (msg.interactive?.button_reply) {
+      buttonTitle = msg.interactive.button_reply.title;
+      payload = msg.interactive.button_reply.id;
+    } else if (msg.button) {
+      buttonTitle = msg.button.text;
+      payload = msg.button.payload;
+    }
+
+    if (buttonTitle.includes("Invoice PDF") || payload.includes("invoice:")) {
+      console.log("🖱️ BUYER KLIK TOMBOL INVOICE PDF!");
+
+      const cleanPayload = payload.replace("invoice:", "");
+      const [orderId, ...rest] = cleanPayload.split("|");
+      const pdfUrl = rest.join("|");
+
+      // Trigger PDF sending
+      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/send-wa`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          buyerPhone: from,
+          adminPhone: "6281289066999",
+          orderId: orderId || "UNKNOWN",
+          pdfUrl,
+          sendPdf: true,
+        }),
+      });
+
+      console.log("✅ PDF request triggered for order:", orderId);
+      return NextResponse.json({ ok: true, pdfTriggered: true });
+    }
+
+    // === 3. Text Message (Auto Reply) ===
     if (type === "text") {
-      const text = messages.text?.body;
-      console.log(`💬 TEXT FROM ${from}:`, text);
+      const text = msg.text?.body || "";
+      console.log(`💬 TEXT FROM ${from}: ${text}`);
 
-      // 🔥 SEND AUTO REPLY
-      const reply = await fetch(
-        `https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${ACCESS_TOKEN}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            messaging_product: "whatsapp",
-            to: from,
-            type: "text",
-            text: {
-              body: `Halo! Terima kasih sudah menghubungi kami 🙌\nPesanmu: "${text}"`,
-            },
-          }),
-        }
-      );
-
-      const replyResult = await reply.json();
-      console.log("📤 Reply sent:", replyResult);
+      // Optional: Auto reply
+      // await sendAutoReply(from, text);
     }
 
-    return NextResponse.json({ status: "ok" });
-  } catch (err) {
-    console.error("🔥 POST webhook error:", err);
-    return NextResponse.json(
-      { status: "error", message: String(err) },
-      { status: 500 }
-    );
+    return NextResponse.json({ ok: true });
+  } catch (err: any) {
+    console.error("🔥 WEBHOOK ERROR:", err);
+    return NextResponse.json({ ok: false }, { status: 500 });
   }
 }
