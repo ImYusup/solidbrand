@@ -12,78 +12,24 @@ const VERIFY_TOKEN = process.env.VERIFY_TOKEN!;
  */
 export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
 
-    const { searchParams } =
-      new URL(req.url);
+    const mode = searchParams.get("hub.mode");
+    const token = searchParams.get("hub.verify_token");
+    const challenge = searchParams.get("hub.challenge");
 
-    const mode =
-      searchParams.get("hub.mode");
+    console.log("🔍 WEBHOOK VERIFY REQUEST:", { mode, token, challenge });
 
-    const token =
-      searchParams.get(
-        "hub.verify_token"
-      );
-
-    const challenge =
-      searchParams.get(
-        "hub.challenge"
-      );
-
-    console.log("======== VERIFY ========");
-
-    console.log({
-      mode,
-      token,
-      challenge,
-      ENV_VERIFY:
-        process.env.VERIFY_TOKEN
-    });
-
-    console.log(
-      "MATCH:",
-      token === process.env.VERIFY_TOKEN
-    );
-
-    if (
-      mode === "subscribe" &&
-      token === process.env.VERIFY_TOKEN
-    ) {
-
-      console.log(
-        "✅ VERIFIED"
-      );
-
-      return new Response(
-        challenge,
-        {
-          status: 200,
-        }
-      );
-
+    if (mode === "subscribe" && token === VERIFY_TOKEN) {
+      console.log("✅ WEBHOOK VERIFIED SUCCESS");
+      return new Response(challenge, { status: 200 });
     }
 
-    console.log(
-      "❌ INVALID"
-    );
-
-    return new Response(
-      "Verification failed",
-      {
-        status: 403,
-      }
-    );
-
-  } catch (e) {
-
-    console.error(e);
-
-    return new Response(
-      "ERROR",
-      {
-        status: 500,
-      }
-    );
-
+    console.warn("❌ WEBHOOK VERIFICATION FAILED");
+    return new Response("Verification failed", { status: 403 });
+  } catch (err) {
+    console.error("🔥 GET webhook error:", err);
+    return new Response("Internal Server Error", { status: 500 });
   }
 }
 
@@ -92,358 +38,60 @@ export async function GET(req: NextRequest) {
  *  ✅ HANDLE INCOMING WEBHOOK (POST)
  * =========================================================
  */
-export async function POST(
-  req: NextRequest
-) {
+export async function POST(req: NextRequest) {
   try {
+    const body = await req.json();
+    console.log("📩 Incoming webhook:", JSON.stringify(body, null, 2));
 
-    console.log(
-      "🔥 WEBHOOK HIT"
-    );
+    const entry = body.entry?.[0];
+    const change = entry?.changes?.[0];
+    const messages = change?.value?.messages?.[0];
 
-    const body =
-      await req.json();
-
-    console.log(
-      "🔥 BODY RECEIVED"
-    );
-
-    console.log(
-      JSON.stringify(
-        body,
-        null,
-        2
-      )
-    );
-
-    const value =
-      body
-        ?.entry?.[0]
-        ?.changes?.[0]
-        ?.value;
-
-    if (!value) {
-      return NextResponse.json({
-        ok: true,
-      });
+    if (!messages) {
+      console.log("⚠️ No message found in payload");
+      return NextResponse.json({ status: "no_message" });
     }
 
-    // ==================
-    // DELIVERY STATUS
-    // ==================
+    const from = messages.from;
+    const type = messages.type;
 
-    if (value?.statuses?.length) {
+    // ================================
+    //  📨 Text Message Received
+    // ================================
+    if (type === "text") {
+      const text = messages.text?.body;
+      console.log(`💬 TEXT FROM ${from}:`, text);
 
-      const s =
-        value.statuses[0];
-
-      console.log(
-        "\n========================"
-      );
-
-      console.log(
-        "📦 DELIVERY UPDATE"
-      );
-
-      console.log(
-        "STATUS:",
-        s.status
-      );
-
-      console.log(
-        "MESSAGE ID:",
-        s.id
-      );
-
-      console.log(
-        "RECIPIENT:",
-        s.recipient_id
-      );
-
-      console.log(
-        "TIMESTAMP:",
-        s.timestamp
-      );
-
-      console.log(
-        "CONVERSATION:",
-        s?.conversation?.id
-      );
-
-      console.log(
-        "CATEGORY:",
-        s?.conversation
-          ?.origin
-          ?.type
-      );
-
-      console.log(
-        "PRICING:",
-        s?.pricing
-      );
-
-      if (
-        s.errors?.length
-      ) {
-
-        console.log(
-          "❌ ERRORS:"
-        );
-
-        console.log(
-          JSON.stringify(
-            s.errors,
-            null,
-            2
-          )
-        );
-
-      }
-
-      if (
-        s.status ===
-        "failed"
-      ) {
-
-        console.log(
-          "🚨 MESSAGE FAILED"
-        );
-
-      }
-
-      if (
-        s.status ===
-        "sent"
-      ) {
-
-        console.log(
-          "📤 SENT TO WHATSAPP"
-        );
-
-      }
-
-      if (
-        s.status ===
-        "delivered"
-      ) {
-
-        console.log(
-          "✅ DELIVERED"
-        );
-
-      }
-
-      if (
-        s.status ===
-        "read"
-      ) {
-
-        console.log(
-          "👀 READ"
-        );
-
-      }
-
-      console.log(
-        "========================\n"
-      );
-
-      return NextResponse.json({
-        ok: true,
-      });
-
-    }
-
-    const msg =
-      value
-        ?.messages?.[0];
-
-    if (!msg) {
-
-      return NextResponse.json({
-        ok: true,
-      });
-
-    }
-
-    const from =
-      msg.from;
-
-    const type =
-      msg.type;
-
-    // ==================
-    // BUTTON CLICK
-    // ==================
-
-    let button =
-      "";
-
-    let payload =
-      "";
-
-    if (
-      msg?.button
-    ) {
-
-      button =
-        msg.button.text;
-
-      payload =
-        msg.button.payload;
-
-    }
-
-    if (
-      msg
-        ?.interactive
-        ?.button_reply
-    ) {
-
-      button =
-        msg
-          .interactive
-          .button_reply
-          .title;
-
-      payload =
-        msg
-          .interactive
-          .button_reply
-          .id;
-
-    }
-
-    if (
-      button ===
-      "Invoice PDF"
-    ) {
-
-      const clean =
-        payload
-          .replace(
-            "invoice:",
-            ""
-          );
-
-      const [
-        orderId,
-        ...rest
-      ] =
-        clean.split(
-          "|"
-        );
-
-      const pdfUrl =
-        rest.join(
-          "|"
-        );
-
-      console.log(
-        "SEND PDF:",
-        orderId
-      );
-
-      await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/send-wa`,
+      // 🔥 SEND AUTO REPLY
+      const reply = await fetch(
+        `https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`,
         {
-          method:
-            "POST",
-
+          method: "POST",
           headers: {
-            "Content-Type":
-              "application/json",
+            Authorization: `Bearer ${ACCESS_TOKEN}`,
+            "Content-Type": "application/json",
           },
-
-          body:
-            JSON.stringify(
-              {
-                buyerPhone:
-                  from,
-
-                adminPhone:
-                  "6281289066999",
-
-                orderId,
-
-                orderDate:
-                  "-",
-
-                customer:
-                  "-",
-
-                wa:
-                  from,
-
-                product:
-                  "-",
-
-                total:
-                  "0",
-
-                address:
-                  "-",
-
-                status:
-                  "-",
-
-                pdfUrl,
-
-                sendPdf:
-                  true,
-              }
-            ),
+          body: JSON.stringify({
+            messaging_product: "whatsapp",
+            to: from,
+            type: "text",
+            text: {
+              body: `Halo! Terima kasih sudah menghubungi kami 🙌\nPesanmu: "${text}"`,
+            },
+          }),
         }
       );
 
-      return NextResponse.json({
-        ok: true,
-        pdfTriggered:
-          true,
-      });
-
+      const replyResult = await reply.json();
+      console.log("📤 Reply sent:", replyResult);
     }
 
-    // ==================
-    // TEXT MESSAGE
-    // ==================
-
-    if (
-      type ===
-      "text"
-    ) {
-
-      console.log(
-        "TEXT:",
-        msg.text?.body
-      );
-
-    }
-
-    return NextResponse.json({
-      ok: true,
-    });
-
-  }
-
-  catch (
-  err
-  ) {
-
-    console.error(
-      err
-    );
-
+    return NextResponse.json({ status: "ok" });
+  } catch (err) {
+    console.error("🔥 POST webhook error:", err);
     return NextResponse.json(
-      {
-        ok: false,
-      },
-      {
-        status:
-          500,
-      }
+      { status: "error", message: String(err) },
+      { status: 500 }
     );
-
   }
-
 }

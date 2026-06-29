@@ -66,7 +66,7 @@ export const products: Product[] = [
       "/products/minislingbag/minislingbag4.png",
     ],
     videoUrl:
-      "https://drive.google.com/file/d/1rd5YvA3U9T_25K-ZpmV7I_hxjvTSnQhG/preview",
+      "https://drive.google.com/file/d/1vDj5ZoSaU9gOJPA-RYSpDFrhG7kaB3Zc/preview",
   },
   {
     id: "urban-slingbag",
@@ -108,7 +108,7 @@ export const products: Product[] = [
       "/products/urbanslingbag/urbanslingbag3.png",
       "/products/urbanslingbag/urbanslingbag4.png",
     ],
-    videoUrl: "https://drive.google.com/file/d/1AGI0rl2g3TsMXqJgF3ZgkFfQx5iAESRx/preview",
+    videoUrl: "https://drive.google.com/file/d/13mjxZHrDH5hmZx5zGK4C28uhcvesBmgf/preview",
   },
   {
     id: "titan-slingbag",
@@ -149,7 +149,7 @@ export const products: Product[] = [
       "/products/titanslingbag/titanslingbag4.png",
       "/products/titanslingbag/titanslingbag5.png",
     ],
-    videoUrl: "https://drive.google.com/file/d/1s4Y_vO2ou0C_xYkM6E_Xl8l_aJn57sUT/preview",
+    videoUrl: "https://drive.google.com/file/d/11XMlr5G0ULFQKiDPQx8kOyCmwkZnFsfS/preview",
   },
   {
     id: "backpacker-travel",
@@ -186,7 +186,7 @@ export const products: Product[] = [
       "Pastikan konfirmasi pembayaran diterima admin agar pesanan dapat segera diproses.",
 
     videoUrl:
-      "https://drive.google.com/file/d/1wVvf17zupiaeURlX1ij5enh3wczpvigp/preview",
+      "https://drive.google.com/file/d/17SkRIMKeNmqFGxJDaUHqO2KllsesG7-Y/preview",
     images: [
       "/products/travelbag/tastravel1-hj.png",
       "/products/travelbag/tastravel2-hj.png",
