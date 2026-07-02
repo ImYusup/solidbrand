@@ -29,6 +29,54 @@ export type Product = {
 
 export const products: Product[] = [
   {
+    id: "orbit-pouch",
+    name: "SOLID Orbit Pouch – Mini Coin & Key Organizer",
+    category: "Bags/Luggage",
+    price: 80000,
+    discountPrice: 50000,
+    weight: 100,
+    currency: "IDR",
+    description:
+      "Mini pouch premium berdesain minimalis yang dirancang untuk menyimpan koin, kunci, earphone, kartu, hingga aksesori kecil agar tetap rapi dan mudah dijangkau. Material waterproof premium membuat isi pouch lebih terlindungi untuk penggunaan sehari-hari.",
+
+    features: [
+      "Material waterproof premium yang tahan cipratan air",
+      "Desain compact berbentuk bulat dengan tampilan minimalis",
+      "Logo rubber SOLID eksklusif pada bagian depan",
+      "Resleting premium yang halus, kuat, dan tahan lama",
+      "Hook carabiner untuk digantung pada tas, backpack, atau belt loop",
+      "Lapisan dalam berkualitas dengan motif khas SOLID",
+    ],
+
+    benefits: [
+      "Menjaga koin, kunci, earphone, dan aksesori kecil tetap rapi",
+      "Praktis dibawa tanpa memenuhi ruang di tas utama",
+      "Mudah dikaitkan pada backpack atau sling bag agar selalu mudah dijangkau",
+      "Melindungi barang kecil dari goresan dan cipratan air ringan",
+      "Desain modern yang cocok digunakan pria maupun wanita",
+    ],
+
+    targetUsers: [
+      "Pengguna EDC (Everyday Carry) yang ingin perlengkapan tetap rapi",
+      "Mahasiswa dan pekerja yang membawa banyak aksesori kecil",
+      "Rider atau traveler yang membutuhkan organizer ringkas",
+      "Pengguna backpack dan sling bag yang ingin akses cepat ke barang penting",
+    ],
+
+    notes:
+      "Pastikan konfirmasi pembayaran diterima admin agar pesanan dapat segera diproses.",
+
+    images: [
+      "/products/orbitpouch/orbitpouch1.png",
+      "/products/orbitpouch/orbitpouch2.png",
+      "/products/orbitpouch/orbitpouch3.png",
+      "/products/orbitpouch/orbitpouch4.png",
+    ],
+
+    videoUrl:
+      "https://drive.google.com/file/d/17nwEIXvMx3UGywxfPfH73hRhtOYGiKK-/preview",
+  },
+  {
     id: "solid-minislingbag",
     name: "SOLID Mini Sling Bag – Tas Selempang Pria Wanita",
     category: "Bags/Luggage",
@@ -64,6 +112,8 @@ export const products: Product[] = [
       "/products/minislingbag/minislingbag2.png",
       "/products/minislingbag/minislingbag3.png",
       "/products/minislingbag/minislingbag4.png",
+      "/products/minislingbag/minislingbag5.png",
+      "/products/minislingbag/minislingbag6.png",
     ],
     videoUrl:
       "https://drive.google.com/file/d/1vDj5ZoSaU9gOJPA-RYSpDFrhG7kaB3Zc/preview",
@@ -107,6 +157,8 @@ export const products: Product[] = [
       "/products/urbanslingbag/urbanslingbag2.png",
       "/products/urbanslingbag/urbanslingbag3.png",
       "/products/urbanslingbag/urbanslingbag4.png",
+      "/products/urbanslingbag/urbanslingbag5.png",
+      "/products/urbanslingbag/urbanslingbag6.png",
     ],
     videoUrl: "https://drive.google.com/file/d/13mjxZHrDH5hmZx5zGK4C28uhcvesBmgf/preview",
   },
@@ -148,6 +200,8 @@ export const products: Product[] = [
       "/products/titanslingbag/titanslingbag3.png",
       "/products/titanslingbag/titanslingbag4.png",
       "/products/titanslingbag/titanslingbag5.png",
+      "/products/titanslingbag/titanslingbag6.png",
+      "/products/titanslingbag/titanslingbag7.png",
     ],
     videoUrl: "https://drive.google.com/file/d/11XMlr5G0ULFQKiDPQx8kOyCmwkZnFsfS/preview",
   },
@@ -186,7 +240,7 @@ export const products: Product[] = [
       "Pastikan konfirmasi pembayaran diterima admin agar pesanan dapat segera diproses.",
 
     videoUrl:
-      "https://drive.google.com/file/d/17SkRIMKeNmqFGxJDaUHqO2KllsesG7-Y/preview",
+      "https://drive.google.com/file/d/1c7-dD-DcTsFKuU7Fvkg-VkVRFDG8gz_E/preview",
     images: [
       "/products/travelbag/tastravel1-hj.png",
       "/products/travelbag/tastravel2-hj.png",
@@ -194,6 +248,7 @@ export const products: Product[] = [
       "/products/travelbag/tastravel1-ht.png",
       "/products/travelbag/tastravel2-ht.png",
       "/products/travelbag/tastravel3-ht.png",
+      "/products/travelbag/tastravel4-ht.png",
     ],
     variants: [
       {
