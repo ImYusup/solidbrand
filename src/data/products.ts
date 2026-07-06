@@ -30,7 +30,7 @@ export type Product = {
 export const products: Product[] = [
   {
     id: "orbit-pouch",
-    name: "SOLID Orbit Pouch – Mini Coin & Key Organizer",
+    name: "SOLID Pouch Bag – Mini Coin & Key Organizer",
     category: "Bags/Luggage",
     price: 80000,
     discountPrice: 50000,

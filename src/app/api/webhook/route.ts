@@ -69,34 +69,32 @@ export async function POST(req: NextRequest) {
     let payload = "";
 
     if (msg.interactive?.button_reply) {
-      buttonTitle = msg.interactive.button_reply.title;
-      payload = msg.interactive.button_reply.id;
+      buttonTitle = msg.interactive.button_reply.title || "";
+      payload = msg.interactive.button_reply.id || "";
     } else if (msg.button) {
-      buttonTitle = msg.button.text;
-      payload = msg.button.payload;
+      buttonTitle = msg.button.text || "";
+      payload = msg.button.payload || "";
     }
 
-    if (buttonTitle.includes("Invoice PDF") || payload.includes("invoice:")) {
-      console.log("🖱️ BUYER KLIK TOMBOL INVOICE PDF!");
+    console.log("Button clicked:", { title: buttonTitle, payload, from });
 
-      const cleanPayload = payload.replace("invoice:", "");
-      const [orderId, ...rest] = cleanPayload.split("|");
-      const pdfUrl = rest.join("|");
+    if (buttonTitle === "Invoice PDF" || buttonTitle.toLowerCase().includes("invoice pdf")) {
+      console.log("🖱️ BUYER KLIK INVOICE PDF!");
 
-      // Trigger PDF sending
+      // Ambil order terbaru buyer ini (kamu harus punya logic ini)
+      // Untuk sementara, kita pakai dummy atau kirim request dengan orderId kosong dulu
       await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/send-wa`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           buyerPhone: from,
           adminPhone: "6281289066999",
-          orderId: orderId || "UNKNOWN",
-          pdfUrl,
+          orderId: "LATEST",   // atau logic ambil order terbaru
+          pdfUrl: "",
           sendPdf: true,
         }),
       });
 
-      console.log("✅ PDF request triggered for order:", orderId);
       return NextResponse.json({ ok: true, pdfTriggered: true });
     }
 

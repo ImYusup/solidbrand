@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     const isLocal = buyerWA.startsWith("62");
 
     const templateName = isLocal ? "invoice_order_xx" : "invoice_order_en";
-    const languageCode = "en"; // keduanya pakai English di Meta
+    const languageCode = "en";   
 
     const formatIDR = (val: any) => {
       const num = Number(String(val || 0).replace(/Rp/gi, "").replace(/[^0-9]/g, ""));
@@ -358,106 +358,55 @@ ${pdfUrl}`,
     };
 
     // =========================
-    // FINAL FLOW
+    // PDF MODE (Button Click)
     // =========================
+    const sendPdf = data.sendPdf === true;
 
-    console.log(
-      "🚀 Starting WA flow"
-    );
+    if (sendPdf) {
+      console.log("📄 PDF REQUEST MODE from button click");
 
+      let pdfResult = null;
+      try {
+        pdfResult = await sendPDF();
+        console.log("✅ PDF SENT to buyer");
+      } catch (err: any) {
+        console.error("❌ PDF ERROR:", err);
+        if (pdfUrl) {
+          const lang: Lang = isLocal ? "id" : "en";
+          await sendTextMessage(buyerWA, MESSAGES[lang].failed(orderId, pdfUrl));
+        }
+      }
+
+      return NextResponse.json({ success: true, pdfSent: !!pdfResult });
+    }
+
+    // =========================
+    // FINAL FLOW - NEW ORDER
+    // =========================
+    console.log("🚀 Starting WA flow - New Order");
+
+    // 1. Admin
+    console.log("📨 SEND TEMPLATE → ADMIN");
     await sendAdminTemplate();
 
     if (pdfUrl) {
-      await new Promise(
-        r =>
-          setTimeout(
-            r,
-            1500
-          )
-      );
-
-      await sendTextMessage(
-        adminWA,
-
-        `📎 Invoice Order ${orderId}
-${pdfUrl}`
-      );
+      await new Promise(r => setTimeout(r, 1000));
+      await sendTextMessage(adminWA, `📎 Invoice Baru\nOrder ID: ${orderId}\n${pdfUrl}`);
     }
 
+    // 2. Buyer Template
+    console.log("📨 SEND TEMPLATE → BUYER");
+    await new Promise(r => setTimeout(r, 1500));
     await sendBuyerTemplate();
-
-    await new Promise(
-      r =>
-        setTimeout(
-          r,
-          12000
-        )
-    );
-
-    let pdfResult = null;
-
-    try {
-
-      pdfResult =
-        await sendPDF();
-
-      console.log(
-        "✅ PDF SENT"
-      );
-
-    } catch (
-    err: any
-    ) {
-
-      console.error(
-        err
-      );
-
-      if (
-        pdfUrl
-      ) {
-
-        const lang: Lang =
-          isLocal
-            ? "id"
-            : "en";
-
-        await sendTextMessage(
-          buyerWA,
-
-          MESSAGES[
-            lang
-          ].failed(
-            orderId,
-            pdfUrl
-          )
-        );
-      }
-    }
 
     return NextResponse.json({
       success: true,
-      pdfSent: !!pdfResult,
+      waitingBuyerClick: true,
     });
 
   } catch (err: any) {
-
-    console.error(
-      "SEND WA ERROR:",
-      err
-    );
-
-    return NextResponse.json(
-      {
-        error:
-          err?.message ||
-          "UNKNOWN_ERROR",
-      },
-      {
-        status: 500,
-      }
-    );
-
+    console.error("SEND WA ERROR:", err);
+    return NextResponse.json({ error: err?.message || "UNKNOWN_ERROR" }, { status: 500 });
   }
 
 }
