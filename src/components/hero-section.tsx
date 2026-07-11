@@ -13,6 +13,7 @@ const images = [
   "/homepage/taskonveksi2.png",
   "/homepage/taskonveksi3.png",
   "/homepage/taskonveksi4.png",
+  "/homepage/taskonveksi5.png",
 ]
 
 export function HeroSection() {
@@ -38,7 +39,7 @@ export function HeroSection() {
               transition={{ duration: 0.6 }}
               className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6"
             >
-              Custom Bags & Sports Jerseys Production
+              Custom Bags & Jersey Sports Production
             </motion.h1>
 
             <motion.p
@@ -47,9 +48,8 @@ export function HeroSection() {
               transition={{ duration: 0.7, delay: 0.1 }}
               className="text-lg md:text-xl text-white/90 mb-8"
             >
-              We sell premium bags and provide custom sports jersey services.
-              Available for individual orders, teams, communities, and
-              brand-scale production with exclusive designs.
+              We specialize in custom bags and jersey sports for individuals, teams, communities,
+              companies, and brands.
             </motion.p>
 
             {/* CTA */}
@@ -103,7 +103,7 @@ export function HeroSection() {
                 >
                   <Image
                     src={images[current]}
-                    alt="Custom Bags & Sports Jerseys Production"
+                    alt="Custom Bags & Jersey Sports Production"
                     fill
                     className="object-cover"
                     priority
@@ -118,9 +118,8 @@ export function HeroSection() {
                 <button
                   key={idx}
                   onClick={() => setCurrent(idx)}
-                  className={`h-2.5 rounded-full transition-all ${
-                    idx === current ? "w-8 bg-white" : "w-2.5 bg-white/40"
-                  }`}
+                  className={`h-2.5 rounded-full transition-all ${idx === current ? "w-8 bg-white" : "w-2.5 bg-white/40"
+                    }`}
                 />
               ))}
             </div>

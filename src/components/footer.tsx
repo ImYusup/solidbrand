@@ -25,8 +25,8 @@ export function Footer() {
             </div>
 
             <p className="text-muted-foreground font-serif max-w-sm mx-auto md:mx-0">
-              Premium bag manufacturing & custom jerseys. Serving individual,
-              team, community, and brand-scale production.
+              We specialize in custom bags and jersey sports for individuals, teams, communities,
+              companies, and brands.
             </p>
 
             {/* SOCIAL MEDIA */}
@@ -128,7 +128,7 @@ export function Footer() {
                   href="/products?category=Jersey Sports"
                   className="hover:text-primary"
                 >
-                  Sports Jerseys
+                  Jersey Sports
                 </Link>
               </li>
             </ul>

@@ -14,7 +14,7 @@ export default function AboutUsPage() {
             About <span className="text-primary">SolidBrand</span>
           </h1>
           <p className="text-lg text-muted-foreground font-serif">
-            Premium Bag Production & Custom Sports Jerseys from Bandung
+            Custom Bags & Jersey Sports Production from Bandung
           </p>
         </div>
 
@@ -40,9 +40,9 @@ export default function AboutUsPage() {
               <h2 className="text-2xl font-bold mb-4">Who Are We?</h2>
               <p className="text-muted-foreground font-serif leading-relaxed mb-4">
                 <strong>SolidBrand</strong> is a local brand specializing in
-                <strong> premium bag manufacturing</strong> and
-                <strong> custom sports jerseys</strong>. We serve individuals,
-                teams, communities, and brand production needs with high quality
+                <strong> custom bags</strong> and
+                <strong> jersey sports</strong>. We serve individuals,
+                teams, communities, companies, and brand production needs with high quality
                 standards.
               </p>
               <p className="text-muted-foreground font-serif leading-relaxed">
@@ -71,7 +71,7 @@ export default function AboutUsPage() {
               <li className="flex gap-3 items-start">
                 <Shirt className="h-5 w-5 text-primary mt-1" />
                 <span>
-                  <strong>Custom Sports Jerseys:</strong> Futsal, basketball,
+                  <strong>Custom Jersey Sports:</strong> Futsal, basketball,
                   volleyball, badminton, and community jerseys — available for
                   single orders or team production.
                 </span>

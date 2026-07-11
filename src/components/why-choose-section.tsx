@@ -22,7 +22,7 @@ const reasons = [
   },
   {
     icon: Shirt,
-    title: "100% Custom Sports Jerseys",
+    title: "100% Custom Jersey Sports",
     description:
       "Full print, gradients, team photos, sponsor logos — everything is possible! Free revisions until fully approved.",
   },

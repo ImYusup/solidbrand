@@ -24,9 +24,9 @@ const manrope = Manrope({
 
 // 🌍 Global SEO Metadata
 export const metadata: Metadata = {
-  title: "Custom Bags & Sports Jerseys Manufacturer | Solid Brand",
+  title: "Custom Bags & Jersey Sports Manufacturer | Solid Brand",
   description:
-    "Solid Brand is a professional manufacturer of premium custom bags and sports jerseys. Serving individual orders, teams, communities, and global brand-scale production with high-quality materials and exclusive designs.",
+    "Solid Brand is a professional manufacturer of premium custom bags and Jersey Sports. Serving individual orders, teams, communities, and global brand-scale production with high-quality materials and exclusive designs.",
 
   icons: {
     icon: "/logo/logo.png",
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   keywords: [
     // 🌍 EN — GLOBAL
     "custom bags manufacturer",
-    "custom sports jerseys",
+    "custom Jersey Sports",
     "custom jersey supplier",
     "premium custom bags",
     "custom backpack manufacturer",
@@ -73,9 +73,9 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://solidbrand.id"),
 
   openGraph: {
-    title: "Custom Bags & Sports Jerseys Manufacturer | Solid Brand",
+    title: "Custom Bags & Jersey Sports Manufacturer | Solid Brand",
     description:
-      "Premium custom bags and sports jerseys manufacturer. Available for individual orders, teams, communities, and brand-scale production worldwide.",
+      "Premium custom bags and Jersey Sports manufacturer. Available for individual orders, teams, communities, and brand-scale production worldwide.",
     url: "https://solidbrand.id",
     siteName: "Solid Brand",
     images: [
@@ -83,7 +83,7 @@ export const metadata: Metadata = {
         url: "https://solidbrand.id/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Custom Bags & Sports Jerseys by Solid Brand",
+        alt: "Custom Bags & Jersey Sports by Solid Brand",
       },
     ],
     locale: "en_US",
@@ -92,9 +92,9 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "Custom Bags & Sports Jerseys Manufacturer | Solid Brand",
+    title: "Custom Bags & Jersey Sports Manufacturer | Solid Brand",
     description:
-      "Premium custom bags & sports jerseys manufacturer for teams, communities, and brands worldwide.",
+      "Premium custom bags & Jersey Sports manufacturer for teams, communities, and brands worldwide.",
     images: ["https://solidbrand.id/og-image.png"],
   },
 };
