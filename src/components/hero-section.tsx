@@ -39,7 +39,7 @@ export function HeroSection() {
               transition={{ duration: 0.6 }}
               className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6"
             >
-              Custom Bags & Jersey Sports Production
+              Custom Bags & Sports Jerseys Production
             </motion.h1>
 
             <motion.p
@@ -48,7 +48,7 @@ export function HeroSection() {
               transition={{ duration: 0.7, delay: 0.1 }}
               className="text-lg md:text-xl text-white/90 mb-8"
             >
-              We specialize in custom bags and jersey sports for individuals, teams, communities,
+              We specialize in custom bags and sports jerseys for individuals, teams, communities,
               companies, and brands.
             </motion.p>
 
@@ -103,7 +103,7 @@ export function HeroSection() {
                 >
                   <Image
                     src={images[current]}
-                    alt="Custom Bags & Jersey Sports Production"
+                    alt="Custom Bags & Sports Jerseys Production"
                     fill
                     className="object-cover"
                     priority

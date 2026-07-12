@@ -406,7 +406,7 @@ export default function ProductDetail({ product }: { product: Product }) {
 
         {/* Footer */}
         <div className="mt-8 text-center text-xs text-gray-400">
-          SOLID menyediakan Sling Bag, Backpack, Travel Bag, dan Custom Pembuatan Jersey Sports.
+          SOLID menyediakan Sling Bag, Backpack, Travel Bag, dan Custom Pembuatan Sports Jerseys.
         </div>
       </div>
     </div>

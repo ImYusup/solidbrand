@@ -25,7 +25,7 @@ export function Footer() {
             </div>
 
             <p className="text-muted-foreground font-serif max-w-sm mx-auto md:mx-0">
-              We specialize in custom bags and jersey sports for individuals, teams, communities,
+              We specialize in custom bags and sports jerseys for individuals, teams, communities,
               companies, and brands.
             </p>
 
