@@ -64,40 +64,6 @@ export async function POST(req: NextRequest) {
     const from = msg.from;
     const type = msg.type;
 
-    // === 2. HANDLE BUTTON CLICK (Invoice PDF) ===
-    let buttonTitle = "";
-    let payload = "";
-
-    if (msg.interactive?.button_reply) {
-      buttonTitle = msg.interactive.button_reply.title || "";
-      payload = msg.interactive.button_reply.id || "";
-    } else if (msg.button) {
-      buttonTitle = msg.button.text || "";
-      payload = msg.button.payload || "";
-    }
-
-    console.log("Button clicked:", { title: buttonTitle, payload, from });
-
-    if (buttonTitle === "Invoice PDF" || buttonTitle.toLowerCase().includes("invoice pdf")) {
-      console.log("🖱️ BUYER KLIK INVOICE PDF!");
-
-      // Ambil order terbaru buyer ini (kamu harus punya logic ini)
-      // Untuk sementara, kita pakai dummy atau kirim request dengan orderId kosong dulu
-      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/send-wa`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          buyerPhone: from,
-          adminPhone: "6281289066999",
-          orderId: "LATEST",   // atau logic ambil order terbaru
-          pdfUrl: "",
-          sendPdf: true,
-        }),
-      });
-
-      return NextResponse.json({ ok: true, pdfTriggered: true });
-    }
-
     // === 3. Text Message (Auto Reply) ===
     if (type === "text") {
       const text = msg.text?.body || "";

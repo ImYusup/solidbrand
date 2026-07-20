@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     "Solid Brand is a professional manufacturer of premium custom bags and sports jerseys. Serving individual orders, teams, communities, and global brand-scale production with high-quality materials and exclusive designs.",
 
   icons: {
-    icon: "/logo/logo.png",
+    icon: "/logo/favicon.png",
   },
 
   keywords: [

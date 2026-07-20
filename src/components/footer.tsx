@@ -9,6 +9,7 @@ import {
   MapPin,
 } from "lucide-react";
 import Link from "next/link";
+import { slugify } from "@/lib/slug";
 
 export function Footer() {
   return (
@@ -109,28 +110,48 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* PRODUCTS */}
-          <div className="mb-10 md:mb-0">
+          {/* Products */}
+          <div className="mb-8 md:mb-0">
             <h3 className="font-bold text-lg mb-4 text-primary">
               Products
             </h3>
+
             <ul className="space-y-2 text-muted-foreground font-serif">
+
+              {[
+                "Bags/Luggage",
+                "Jersey Sports",
+              ].map((category) => (
+                <li key={category}>
+                  <Link
+                    href={`/products/category/${slugify(category)}`}
+                    className="hover:text-primary transition-colors"
+                  >
+                    {category === "Bags/Luggage"
+                      ? "Bags & Luggage"
+                      : "Sports Jerseys"}
+                  </Link>
+                </li>
+              ))}
+
               <li>
                 <Link
-                  href="/products?category=Bags/Luggage"
-                  className="hover:text-primary"
+                  href="/custom"
+                  className="hover:text-primary transition-colors"
                 >
-                  Bags / Luggage
+                  Custom Bags
                 </Link>
               </li>
+
               <li>
                 <Link
-                  href="/products?category=Jersey Sports"
-                  className="hover:text-primary"
+                  href="/custom-jerseys"
+                  className="hover:text-primary transition-colors"
                 >
-                  Jersey Sports
+                  Custom Jerseys
                 </Link>
               </li>
+
             </ul>
           </div>
 
@@ -139,17 +160,18 @@ export function Footer() {
             <h3 className="font-bold text-lg mb-4 text-primary">
               Company
             </h3>
+
             <ul className="space-y-2 text-muted-foreground font-serif">
+
               <li>
-                <Link href="/about-us" className="hover:text-primary transition-colors">
+                <Link
+                  href="/about-us"
+                  className="hover:text-primary transition-colors"
+                >
                   About Us
                 </Link>
               </li>
-              <li>
-                <Link href="/privacy" className="hover:text-primary transition-colors">
-                  Privacy Policy
-                </Link>
-              </li>
+
               <li>
                 <a
                   href="https://imyusupblogs.vercel.app/"
@@ -160,6 +182,25 @@ export function Footer() {
                   Blog
                 </a>
               </li>
+
+              <li>
+                <Link
+                  href="/privacy"
+                  className="hover:text-primary transition-colors"
+                >
+                  Privacy Policy
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  href="/contact"
+                  className="hover:text-primary transition-colors"
+                >
+                  Contact
+                </Link>
+              </li>
+
             </ul>
           </div>
 

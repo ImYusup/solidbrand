@@ -1,6 +1,6 @@
 // src/data/index.ts
 import { products } from "./products";  
-import { jerseys } from "./jerseys";    
+import { jerseys } from "./jersey";    
 import type { Product } from "./products";
 
 export const allProducts: Product[] = [

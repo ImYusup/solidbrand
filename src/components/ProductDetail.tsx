@@ -74,7 +74,7 @@ export default function ProductDetail({ product }: { product: Product }) {
   useEffect(() => {
     setSelectedIndex(0);
   }, [selectedVariant, mediaList]);
-  
+
   const thumbContainerRef = useRef<HTMLDivElement>(null);
   const scrollThumbIntoView = (i: number) => {
     const container = thumbContainerRef.current;
@@ -121,14 +121,6 @@ export default function ProductDetail({ product }: { product: Product }) {
     }
 
     try {
-      // const now = new Date();
-      // const day = String(now.getDate()).padStart(2, "0");
-      // const month = String(now.getMonth() + 1).padStart(2, "0");
-      // const year = now.getFullYear();
-      // const hours = String(now.getHours()).padStart(2, "0");
-      // const minutes = String(now.getMinutes()).padStart(2, "0");
-      // const seconds = String(now.getSeconds()).padStart(2, "0");
-      // const orderId = `ORD-${day}${month}${year}-${hours}${minutes}${seconds}`;
       const orderId = generateOrderId();
 
       const variantId = selectedVariant?.id || product.id;
@@ -366,7 +358,7 @@ export default function ProductDetail({ product }: { product: Product }) {
 
           {product.features && (
             <div>
-              <h3 className="font-semibold text-lg mb-2">Fitur Utama</h3>
+              <h3 className="font-semibold text-lg mb-2">Key Features</h3>
               <ul className="list-disc list-inside space-y-1">
                 {product.features.map((f: string, i: number) => (
                   <li key={i}>{f}</li>
@@ -377,7 +369,7 @@ export default function ProductDetail({ product }: { product: Product }) {
 
           {product.benefits && (
             <div>
-              <h3 className="font-semibold text-lg mb-2">Manfaat</h3>
+              <h3 className="font-semibold text-lg mb-2">Benefits</h3>
               <ul className="list-disc list-inside space-y-1">
                 {product.benefits.map((b: string, i: number) => (
                   <li key={i}>{b}</li>
@@ -388,7 +380,7 @@ export default function ProductDetail({ product }: { product: Product }) {
 
           {product.targetUsers && (
             <div>
-              <h3 className="font-semibold text-lg mb-2">Siapa yang Cocok</h3>
+              <h3 className="font-semibold text-lg mb-2">Ideal For</h3>
               <ul className="list-disc list-inside space-y-1">
                 {product.targetUsers.map((t: string, i: number) => (
                   <li key={i}>{t}</li>
@@ -399,14 +391,14 @@ export default function ProductDetail({ product }: { product: Product }) {
 
           {product.notes && (
             <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-              <strong>Catatan:</strong> {product.notes}
+              <strong>Note:</strong> {product.notes}
             </div>
           )}
         </div>
 
         {/* Footer */}
         <div className="mt-8 text-center text-xs text-gray-400">
-          SOLID menyediakan Sling Bag, Backpack, Travel Bag, dan Custom Pembuatan Sports Jerseys.
+          SOLID specializes in premium sling bags, backpacks, travel bags, pouch bags, and custom sports jersey manufacturing for customers worldwide.
         </div>
       </div>
     </div>

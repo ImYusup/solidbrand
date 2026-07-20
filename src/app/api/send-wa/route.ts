@@ -20,6 +20,15 @@ export async function POST(req: NextRequest) {
       pdfUrl,
     } = data;
 
+    console.log("========== SEND WA ==========");
+    console.log({
+      buyerPhone,
+      adminPhone,
+      orderId,
+      pdfUrl,
+    });
+    console.log("=============================");
+
     const ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN!;
     const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID!;
 
@@ -44,8 +53,8 @@ export async function POST(req: NextRequest) {
     // =========================
     const isLocal = buyerWA.startsWith("62");
 
-    const templateName = isLocal ? "invoice_order_xx" : "invoice_order_en";
-    const languageCode = "en";   
+    const templateName = isLocal ? "lokal_order" : "asing_order";
+    const languageCode = "en";
 
     const formatIDR = (val: any) => {
       const num = Number(String(val || 0).replace(/Rp/gi, "").replace(/[^0-9]/g, ""));
@@ -54,66 +63,7 @@ export async function POST(req: NextRequest) {
 
     const totalNumber = formatIDR(total);
 
-    // =========================
-    // LANGUAGE MESSAGES
-    // =========================
-
-    type Lang = "id" | "en";
-
-    const MESSAGES = {
-      id: {
-        pdfCaption: (
-          orderId: string,
-          total: number
-        ) =>
-          `✅ Invoice ${orderId} - SolidBrand
-Total: Rp ${total.toLocaleString("id-ID")}
-Terima kasih telah berbelanja di SolidBrand 🙏`,
-
-        failed: (
-          orderId: string,
-          pdfUrl: string
-        ) =>
-          `📄 Invoice ${orderId}
-
-PDF gagal dikirim via WhatsApp.
-Silakan download manual:
-${pdfUrl}`,
-      },
-
-      en: {
-        pdfCaption: (
-          orderId: string,
-          total: number
-        ) =>
-          `✅ Invoice ${orderId} - SolidBrand
-Total: Rp ${total.toLocaleString("en-US")}
-Thank you for shopping at SolidBrand 🙏`,
-
-        failed: (
-          orderId: string,
-          pdfUrl: string
-        ) =>
-          `📄 Invoice ${orderId}
-
-Failed to send PDF via WhatsApp.
-Please download here:
-${pdfUrl}`,
-      },
-    } satisfies Record<
-      Lang,
-      {
-        pdfCaption: (
-          orderId: string,
-          total: number
-        ) => string;
-
-        failed: (
-          orderId: string,
-          pdfUrl: string
-        ) => string;
-      }
-    >;
+    console.log("PDF URL:", pdfUrl);
 
     // =========================
     // SEND TEXT MESSAGE
@@ -194,6 +144,10 @@ ${pdfUrl}`,
               { type: "text", text: totalNumber.toLocaleString("id-ID") },
               { type: "text", text: address },
               { type: "text", text: status },
+              {
+                type: "text",
+                text: pdfUrl || "-",
+              }
             ]
           }]
         }
@@ -208,177 +162,6 @@ ${pdfUrl}`,
       console.log(`BUYER TEMPLATE (${isLocal ? 'LOCAL' : 'INTERNATIONAL'}) RESULT:`, result);
       return result;
     };
-
-    // =========================
-    // SEND PDF
-    // =========================
-    const sendPDF = async () => {
-      if (!pdfUrl) return null;
-
-      let directUrl = pdfUrl;
-
-      if (
-        pdfUrl.includes(
-          "drive.google.com"
-        )
-      ) {
-        const fileId =
-          pdfUrl.match(
-            /\/d\/([a-zA-Z0-9_-]+)/
-          )?.[1] ||
-          pdfUrl.match(
-            /[?&]id=([a-zA-Z0-9_-]+)/
-          )?.[1];
-
-        if (fileId) {
-          directUrl =
-            `https://drive.usercontent.google.com/download?id=${fileId}&export=download&confirm=t`;
-        }
-      }
-
-      const pdfRes =
-        await fetch(directUrl);
-
-      if (!pdfRes.ok) {
-        throw new Error(
-          "PDF_DOWNLOAD_FAILED"
-        );
-      }
-
-      const pdfBuffer =
-        Buffer.from(
-          await pdfRes.arrayBuffer()
-        );
-
-      const form =
-        new FormData();
-
-      form.append(
-        "messaging_product",
-        "whatsapp"
-      );
-
-      form.append(
-        "file",
-        new File(
-          [pdfBuffer],
-          `Invoice_${orderId}.pdf`,
-          {
-            type:
-              "application/pdf",
-          }
-        )
-      );
-
-      const uploadRes =
-        await fetch(
-          `https://graph.facebook.com/v23.0/${PHONE_NUMBER_ID}/media`,
-          {
-            method: "POST",
-
-            headers: {
-              Authorization:
-                `Bearer ${ACCESS_TOKEN}`,
-            },
-
-            body: form,
-          }
-        );
-
-      const upload =
-        await uploadRes.json();
-
-      if (!upload.id) {
-        throw new Error(
-          JSON.stringify(upload)
-        );
-      }
-
-      const lang: Lang =
-        isLocal
-          ? "id"
-          : "en";
-
-      const sendRes =
-        await fetch(url, {
-          method: "POST",
-
-          headers: {
-            Authorization:
-              `Bearer ${ACCESS_TOKEN}`,
-
-            "Content-Type":
-              "application/json",
-          },
-
-          body:
-            JSON.stringify({
-              messaging_product:
-                "whatsapp",
-
-              to:
-                buyerWA,
-
-              type:
-                "document",
-
-              document: {
-                id:
-                  upload.id,
-
-                filename:
-                  `Invoice_${orderId}.pdf`,
-
-                caption:
-                  MESSAGES[
-                    lang
-                  ].pdfCaption(
-                    orderId,
-                    totalNumber
-                  ),
-              },
-            }),
-        });
-
-      const result =
-        await sendRes.json();
-
-      if (
-        !sendRes.ok ||
-        !result.messages
-      ) {
-        throw new Error(
-          result?.error
-            ?.message ||
-          "SEND_DOCUMENT_FAILED"
-        );
-      }
-
-      return result;
-    };
-
-    // =========================
-    // PDF MODE (Button Click)
-    // =========================
-    const sendPdf = data.sendPdf === true;
-
-    if (sendPdf) {
-      console.log("📄 PDF REQUEST MODE from button click");
-
-      let pdfResult = null;
-      try {
-        pdfResult = await sendPDF();
-        console.log("✅ PDF SENT to buyer");
-      } catch (err: any) {
-        console.error("❌ PDF ERROR:", err);
-        if (pdfUrl) {
-          const lang: Lang = isLocal ? "id" : "en";
-          await sendTextMessage(buyerWA, MESSAGES[lang].failed(orderId, pdfUrl));
-        }
-      }
-
-      return NextResponse.json({ success: true, pdfSent: !!pdfResult });
-    }
 
     // =========================
     // FINAL FLOW - NEW ORDER
@@ -396,12 +179,14 @@ ${pdfUrl}`,
 
     // 2. Buyer Template
     console.log("📨 SEND TEMPLATE → BUYER");
-    await new Promise(r => setTimeout(r, 1500));
+
+    await new Promise((r) => setTimeout(r, 1500));
+
     await sendBuyerTemplate();
 
     return NextResponse.json({
       success: true,
-      waitingBuyerClick: true,
+      pdfUrl,
     });
 
   } catch (err: any) {

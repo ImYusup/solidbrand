@@ -24,7 +24,7 @@ Phone Number: ${formData.phone}
 Email: ${formData.email}
 Application Request: ${formData.requestApps}
 `.trim();
-    const mailtoLink = `mailto:webbotproo@gmail.com?subject=Custom Solutions Request&body=${encodeURIComponent(
+    const mailtoLink = `mailto:solidbrand@gmail.com?subject=Custom Solutions Request&body=${encodeURIComponent(
       emailBody
     )}`;
     window.location.href = mailtoLink;

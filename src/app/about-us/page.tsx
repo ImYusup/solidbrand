@@ -1,108 +1,82 @@
 // src/app/about-us/page.tsx
 "use client";
 
-import { Shirt, Briefcase, MapPin } from "lucide-react";
+import React from "react";
+import { Award } from "lucide-react";
 
 export default function AboutUsPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-100 to-white">
-      <section className="py-20 container mx-auto px-4 flex-1">
-
-        {/* HEADER */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-extrabold mb-4">
-            About <span className="text-primary">SolidBrand</span>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+      <section className="py-20 container mx-auto px-4">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <h1 className="text-5xl font-extrabold text-black mb-4">
+            About SolidBrand
           </h1>
-          <p className="text-lg text-muted-foreground font-serif">
-            Custom Bags & Jersey Sports Production from Bandung
+
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Premium OEM & ODM manufacturer specializing in custom bags and sports
+            jerseys from Bandung, Indonesia.
           </p>
         </div>
 
-        {/* MAIN CARD */}
-        <div className="max-w-4xl mx-auto bg-white p-10 rounded-2xl shadow-xl border border-gray-200">
+        {/* Main Card */}
+        <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl p-10 border border-gray-100">
+          <div className="flex flex-col md:flex-row items-center gap-10">
 
-          {/* INTRO */}
-          <div className="grid md:grid-cols-3 gap-8 items-center mb-10">
-
-            {/* LOGO */}
-            <div className="flex justify-center">
-              <div className="w-36 h-36 rounded-2xl bg-primary/10 flex items-center justify-center">
+            {/* Logo */}
+            <div className="md:w-1/3">
+              <div className="w-32 h-32 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <img
                   src="/logo/icon.png"
                   alt="SolidBrand Logo"
-                  className="w-24 h-24 object-contain"
+                  className="w-20 h-20 object-contain"
                 />
               </div>
             </div>
 
-            {/* TEXT */}
-            <div className="md:col-span-2">
-              <h2 className="text-2xl font-bold mb-4">Who Are We?</h2>
-              <p className="text-muted-foreground font-serif leading-relaxed mb-4">
-                <strong>SolidBrand</strong> is a local brand specializing in
-                <strong> custom bags</strong> and
-                <strong> jersey sports</strong>. We serve individuals,
-                teams, communities, companies, and brand production needs with high quality
-                standards.
-              </p>
-              <p className="text-muted-foreground font-serif leading-relaxed">
-                Our focus is delivering products that are functional, durable,
-                and built with a strong design identity.
+            {/* Description */}
+            <div className="md:w-2/3">
+              <h2 className="text-3xl font-bold mb-4">
+                Who We Are
+              </h2>
+
+              <p className="text-gray-700 leading-relaxed text-lg text-justify">SolidBrand is an Indonesian manufacturer
+                Specializing in premium custom bags and custom sports jerseys.
+                We provide OEM, ODM, and Private Label manufacturing services
+                for businesses, sports clubs, schools, communities, organizations,
+                and fashion brands worldwide.
               </p>
             </div>
           </div>
 
-          {/* PRODUCTS */}
-          <div className="mb-10">
-            <h3 className="text-xl font-semibold text-primary mb-4">
-              Our Products & Services
+          {/* Legal PT */}
+          <div className="mt-12 border-t pt-10">
+            <h3 className="text-2xl font-semibold mb-6 flex items-center gap-3">
+              <Award className="text-amber-600" />
+              Legal Company Information
             </h3>
 
-            <ul className="space-y-4 text-muted-foreground font-serif">
-              <li className="flex gap-3 items-start">
-                <Briefcase className="h-5 w-5 text-primary mt-1" />
-                <span>
-                  <strong>Custom Bags & Luggage:</strong> Sling bags, backpacks,
-                  travel bags, work bags, and promotional bags made with premium
-                  materials.
-                </span>
-              </li>
+            <div className="bg-gray-50 p-8 rounded-2xl text-center">
 
-              <li className="flex gap-3 items-start">
-                <Shirt className="h-5 w-5 text-primary mt-1" />
-                <span>
-                  <strong>Custom Jersey Sports:</strong> Futsal, basketball,
-                  volleyball, badminton, and community jerseys — available for
-                  single orders or team production.
-                </span>
-              </li>
-            </ul>
-          </div>
+              <p className="text-gray-600 mb-6">
+                SolidBrand is operated by a legally registered company in
+                Indonesia and is committed to providing trusted manufacturing
+                services for domestic and international customers.
+              </p>
 
-          {/* WHY US */}
-          <div className="mb-10">
-            <h3 className="text-xl font-semibold text-primary mb-4">
-              Why Choose SolidBrand?
-            </h3>
+              <div className="max-w-md mx-auto">
+                <img
+                  src="/company/legal-pt.png"
+                  alt="Legal Company Document"
+                  className="w-full rounded-2xl shadow-lg border border-gray-200"
+                />
 
-            <ul className="list-disc list-inside space-y-2 text-muted-foreground font-serif">
-              <li>Accepts single orders, team orders, and brand production</li>
-              <li>Selected materials & precise stitching</li>
-              <li>Custom designs tailored to your needs</li>
-              <li>Local production in Bandung</li>
-              <li>Competitive & transparent pricing</li>
-            </ul>
-          </div>
+                <p className="text-xs text-gray-500 mt-3">
+                  Official Company Registration Document
+                </p>
+              </div>
 
-          {/* LOCATION */}
-          <div>
-            <h3 className="text-xl font-semibold text-primary mb-4">
-              Production Location
-            </h3>
-
-            <div className="flex items-start gap-3 text-muted-foreground font-serif">
-              <MapPin className="h-5 w-5 text-primary mt-1" />
-              <span>Bandung – West Java, Indonesia</span>
             </div>
           </div>
 

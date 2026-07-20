@@ -1,6 +1,6 @@
 // src/app/products/ProductsContent.tsx
 "use client"
-
+import { slugify } from "@/lib/slug";
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { allProducts } from "@/data"
@@ -47,9 +47,8 @@ export default function ProductsContent() {
                 <li>
                   <Link
                     href="/products"
-                    className={`block py-3 px-5 rounded-xl font-semibold transition ${
-                      !categoryFilter ? "bg-accent text-white" : "text-gray-800 hover:bg-gray-100"
-                    }`}
+                    className={`block py-3 px-5 rounded-xl font-semibold transition ${!categoryFilter ? "bg-accent text-white" : "text-gray-800 hover:bg-gray-100"
+                      }`}
                   >
                     All Products
                   </Link>
@@ -57,10 +56,9 @@ export default function ProductsContent() {
                 {categories.map((cat) => (
                   <li key={cat}>
                     <Link
-                      href={`/products?category=${encodeURIComponent(cat)}`}
-                      className={`block py-3 px-5 rounded-xl font-semibold transition ${
-                        categoryFilter === cat ? "bg-accent text-white" : "text-gray-800 hover:bg-gray-100"
-                      }`}
+                      href={`/products/category/${slugify(cat)}`}
+                      className={`block py-3 px-5 rounded-xl font-semibold transition ${categoryFilter === cat ? "bg-accent text-white" : "text-gray-800 hover:bg-gray-100"
+                        }`}
                     >
                       {cat}
                     </Link>
