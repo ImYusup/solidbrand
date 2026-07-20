@@ -16,7 +16,7 @@ import {
 const reasons = [
   {
     icon: Backpack,
-    title: "Pouch bag • Sling Bags • Backpacks • Travel Bags • Premium Custom Bags",
+    title: "Pouch Bags • Sling Bags • Backpacks • Travel Bags • Premium Custom Bags",
     description:
       "Imported materials, strong stitching, and modern designs — perfect for daily use, traveling, or team merchandise.",
   },
