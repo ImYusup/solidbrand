@@ -114,6 +114,47 @@ export const products: Product[] = [
       "https://drive.google.com/file/d/1vDj5ZoSaU9gOJPA-RYSpDFrhG7kaB3Zc/preview",
   },
   {
+    id: "solid-orbitpouch",
+    name: "SOLID Orbit Pouch",
+    category: "Bags/Luggage",
+    price: 90000,
+    discountPrice: 70000,
+    weight: 100,
+    currency: "IDR",
+    description:
+      "A premium minimalist waterproof mini pouch designed to organize coins, keys, earphones, cards, and everyday essentials while keeping them secure and easily accessible.",
+    features: [
+      "Premium waterproof material",
+      "Compact round minimalist design",
+      "Exclusive SOLID rubber logo",
+      "Smooth and durable premium zipper",
+      "Built-in carabiner hook for hanging on bags or belt loops",
+    ],
+    benefits: [
+      "Keeps coins, keys, earphones, and small accessories neatly organized",
+      "Compact and lightweight for everyday carry",
+      "Easy to attach to backpacks, sling bags, or belt loops",
+      "Protects essentials from scratches and light rain",
+    ],
+    targetUsers: [
+      "EDC enthusiasts",
+      "Students",
+      "Professionals",
+      "Travelers",
+    ],
+    notes:
+      "Orders are processed immediately after payment confirmation.",
+    images: [
+      "/products/orbitpouch/orbitpouch1.1.png",
+      "/products/orbitpouch/orbitpouch2.1.png",
+      "/products/orbitpouch/orbitpouch3.1.png",
+      "/products/orbitpouch/orbitpouch4.1.png",
+      "/products/orbitpouch/orbitpouch5.1.png",
+    ],
+    videoUrl:
+      "https://drive.google.com/file/d/1qH1ZKv3QDh5g8pkDLP5sJ2EEXyAltr9x/preview",
+  },
+  {
     id: "urban-slingbag",
     name: "SOLID Urban Sling Bag",
     category: "Bags/Luggage",
