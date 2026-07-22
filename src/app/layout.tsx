@@ -8,6 +8,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import Script from "next/script";
 import CartSidebar from "@/components/CartSidebar";
+import StructuredData from "@/components/StructuredData";
 
 // Fonts
 const geist = Geist({
@@ -24,9 +25,19 @@ const manrope = Manrope({
 
 // 🌍 Global SEO Metadata
 export const metadata: Metadata = {
+  metadataBase: new URL("https://solidbrand.id"),
+
+  verification: {
+    google: "zkmOtxoDSsYxaPz1Xp810-tM78eGfy6-no4eqDzjS6o",
+  },
+
   title: "Custom Bags & Sports Jerseys Manufacturer | Solid Brand",
   description:
     "Solid Brand is a professional manufacturer of premium custom bags and sports jerseys. Serving individual orders, teams, communities, and global brand-scale production with high-quality materials and exclusive designs.",
+
+  alternates: {
+    canonical: "/",
+  },
 
   icons: {
     icon: "/logo/favicon.png",
@@ -49,6 +60,21 @@ export const metadata: Metadata = {
     "private label bags",
     "OEM bags manufacturer",
     "OEM jersey manufacturer",
+    "bag manufacturer",
+    "sports jersey manufacturer",
+    "backpack supplier",
+    "travel bag manufacturer",
+    "corporate merchandise",
+    "promotional bags",
+    "OEM manufacturer Indonesia",
+    "private label bags",
+    "custom backpack supplier",
+    "custom merchandise",
+    "school bag manufacturer",
+    "laptop bag manufacturer",
+    "custom duffle bag",
+    "custom tote bag",
+    "factory Indonesia",
 
     // 🇮🇩 ID — LOCAL (tetap dipertahankan)
     "tas custom",
@@ -72,7 +98,6 @@ export const metadata: Metadata = {
   ],
 
   generator: "Solid Brand",
-  metadataBase: new URL("https://solidbrand.id"),
 
   openGraph: {
     title: "Custom Bags & Sports Jerseys Manufacturer | Solid Brand",
@@ -112,7 +137,9 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/logo/favicon.png" type="image/png" />
       </head>
+
       <body className="font-sans min-h-screen flex flex-col">
+        <StructuredData />
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
