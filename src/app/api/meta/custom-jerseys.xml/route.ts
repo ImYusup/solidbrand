@@ -34,7 +34,7 @@ Premium fully customized sports jerseys.
 ✔ Esports
 ✔ Motocross
 
-• Order from 1 piece
+• Order from 12 pcs
 • Team Orders
 • Clubs
 • Schools
